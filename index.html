@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>حاسبة العطور الاحترافية</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#e8c070"/>
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="حاسبة العطور"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="apple-touch-startup-image" href="icon-512.png"/>
+
+<!-- General -->
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="application-name" content="حاسبة العطور"/>
+<meta name="description" content="حاسبة العطور الاحترافية — تركيبات، مزج، تكاليف، أرباح"/>
+
+<link rel="stylesheet" href="css/style.css"/>
+
+<!-- iOS Safe Area -->
+<style>
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .container {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🧴</div>
+    <h1>حاسبة العطور الاحترافية</h1>
+    <div class="badge"><div class="badge-dot"></div>يعمل بالكامل بدون إنترنت</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('calc')">🧪 حاسبة</button>
+    <button class="tab" onclick="showTab('blend')">🎨 مزج</button>
+    <button class="tab" onclick="showTab('favs')">⭐ مفضلة</button>
+  </div>
+
+  <div id="tab-calc"></div>
+  <div id="tab-blend" style="display:none"></div>
+  <div id="tab-favs" style="display:none"></div>
+</div>
+
+<div id="modal"></div>
+<div id="toast"></div>
+
+<!-- Install Banner (iOS) -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1a1008,#2a1a08);border-top:1px solid rgba(232,192,112,0.4);padding:14px 18px;padding-bottom:calc(14px + env(safe-area-inset-bottom));z-index:9999;font-family:inherit">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#e8c070">📲 ثبّت التطبيق</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:3px">اضغط <strong style="color:#e8c070">□ ↑</strong> ثم "أضف إلى الشاشة الرئيسية"</div>
+    </div>
+    <button onclick="document.getElementById('install-banner').style.display='none'" style="background:rgba(232,192,112,0.15);border:1px solid rgba(232,192,112,0.3);color:#e8c070;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;font-family:inherit">فهمت ✓</button>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── Service Worker Registration ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('✅ SW registered:', reg.scope))
+      .catch(err => console.log('❌ SW error:', err));
+  });
+}
+
+// ── iOS Install Banner ──
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone;
+const bannerDismissed = localStorage.getItem('install_banner_dismissed');
+
+if (isIOS && !isStandalone && !bannerDismissed) {
+  setTimeout(() => {
+    document.getElementById('install-banner').style.display = 'block';
+  }, 2500);
+  document.getElementById('install-banner')
+    .querySelector('button')
+    .addEventListener('click', () => {
+      localStorage.setItem('install_banner_dismissed', '1');
+    });
+}
+</script>
+</body>
+</html>
