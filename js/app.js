@@ -687,6 +687,98 @@ function blendSelectHTML(fb, num, label, compatFam) {
   </div>`;
 }
 
+
+// ═══════════════════════════════════════════════════
+// BLEND MIX STEPS — خطوات الخلط الصحيحة
+// ═══════════════════════════════════════════════════
+function blendMixStepsHTML(ratios, bSize, mode) {
+  // حساب مقادير الكحول والإضافات
+  const totalOilPct  = ratios.reduce((s, r) => s + r.pct, 0); // 100
+  // الزيوت تشكل 18% من الزجاجة (EDP) من مجموع 100%
+  // نسبة الزيت الفعلية = مقدار الزيت من الزجاجة الكاملة
+  // هنا الـ pct هي توزيع الزيوت بين بعض (مجموعها 100)
+  // الزجاجة الكاملة = بSize مل
+  // كل زيت حجمه = (pct/100) * oilTotal مل
+  // oilTotal ≈ 20% من bSize (EDP معقول للخلطات)
+  const oilTotal    = parseFloat((bSize * 0.20).toFixed(1));
+  const dpgMl       = parseFloat((bSize * 0.05).toFixed(1));
+  const alcMl       = parseFloat(Math.max(0, bSize - oilTotal - dpgMl).toFixed(1));
+
+  const oils = ratios.map(r => ({
+    name:  (r.brand ? r.brand.ar + ' · ' : '') + r.perf.n,
+    ml:    parseFloat(((r.pct / 100) * oilTotal).toFixed(1)),
+    role:  r.role,
+    color: FAM[r.perf.f] ? FAM[r.perf.f].color : '#c8a96e',
+  }));
+
+  return `
+  <div style="background:rgba(232,192,112,0.07);border:2px solid rgba(232,192,112,0.35);border-radius:14px;padding:16px;margin-top:14px">
+    <div style="font-size:15px;font-weight:800;color:var(--g);margin-bottom:14px">📋 خطوات الخلط الكاملة — ${bSize}مل</div>
+
+    <div style="font-size:12px;color:rgba(110,200,181,0.9);background:rgba(110,200,181,0.08);border:1px solid rgba(110,200,181,0.25);border-radius:9px;padding:9px 12px;margin-bottom:14px;line-height:1.7">
+      ✅ <strong>القاعدة الذهبية:</strong> كل الزيوت أولاً مع بعض ← حرك ← ثم الكحول أخيراً ببطء
+    </div>
+
+    <!-- المرحلة الأولى: الزيوت -->
+    <div style="font-size:13px;font-weight:700;color:var(--g);margin-bottom:9px">المرحلة الأولى — خلط الزيوت (${oilTotal}مل)</div>
+    ${oils.map((o, i) => `
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid ${o.color}33;border-radius:10px;padding:10px 13px;margin-bottom:7px">
+      <div style="width:26px;height:26px;border-radius:50%;background:${o.color}25;border:2px solid ${o.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${o.color};flex-shrink:0">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">${o.name}</div>
+        ${o.role==='رئيسي'?`<span style="font-size:10px;color:var(--g);background:rgba(232,192,112,0.15);border-radius:20px;padding:1px 7px">👑 رئيسي</span>`:`<span style="font-size:10px;color:var(--mu);background:rgba(255,255,255,0.07);border-radius:20px;padding:1px 7px">داعم</span>`}
+      </div>
+      <div style="font-size:18px;font-weight:800;color:${o.color}">${o.ml} مل</div>
+    </div>`).join('')}
+
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:13px;color:var(--mu)">
+      <span style="font-size:18px">🥄</span>
+      <span>حرّك الزيوت بلطف <strong style="color:#fff">دقيقة كاملة</strong> حتى تتجانس تماماً</span>
+    </div>
+
+    <!-- المرحلة الثانية: الكحول -->
+    <div style="font-size:13px;font-weight:700;color:var(--g);margin-bottom:9px">المرحلة الثانية — إضافة الكحول (${alcMl}مل)</div>
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(110,143,200,0.1);border:1px solid rgba(110,143,200,0.3);border-radius:10px;padding:10px 13px;margin-bottom:7px">
+      <div style="width:26px;height:26px;border-radius:50%;background:rgba(110,143,200,0.2);border:2px solid #6e8fc8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#6e8fc8;flex-shrink:0">${oils.length+1}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:#fff">كحول عطري</div>
+        <div style="font-size:11px;color:var(--mu)">أضفه ببطء على الزيوت مع التحريك المستمر</div>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:#6e8fc8">${alcMl} مل</div>
+    </div>
+
+    ${dpgMl > 0 ? `
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(200,160,110,0.08);border:1px solid rgba(200,160,110,0.25);border-radius:10px;padding:10px 13px;margin-bottom:7px">
+      <div style="width:26px;height:26px;border-radius:50%;background:rgba(200,160,110,0.15);border:2px solid #c8a06e;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#c8a06e;flex-shrink:0">${oils.length+2}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:#fff">DPG (اختياري)</div>
+        <div style="font-size:11px;color:var(--mu)">يضاف مع الكحول — يبطئ التبخر</div>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:#c8a06e">${dpgMl} مل</div>
+    </div>` : ''}
+
+    <!-- التعتيق -->
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(158,110,200,0.08);border:1px solid rgba(158,110,200,0.25);border-radius:10px;padding:10px 13px;margin-top:4px">
+      <span style="font-size:22px">⏳</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#c8a0e8">تعتيق 48-72 ساعة</div>
+        <div style="font-size:11px;color:var(--mu)">أغلق الزجاجة واحفظها في مكان بارد ومظلم قبل الاستخدام</div>
+      </div>
+    </div>
+
+    <!-- ملخص -->
+    <div style="margin-top:12px;padding-top:11px;border-top:1px solid rgba(232,192,112,0.2)">
+      <div style="font-size:12px;color:var(--mu);margin-bottom:5px">ملخص الكميات الكاملة:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <span style="font-size:12px;font-weight:700;color:var(--g);background:rgba(232,192,112,0.12);border-radius:20px;padding:3px 11px">زيوت ${oilTotal}مل</span>
+        <span style="font-size:12px;font-weight:700;color:#6e8fc8;background:rgba(110,143,200,0.12);border-radius:20px;padding:3px 11px">كحول ${alcMl}مل</span>
+        ${dpgMl > 0 ? `<span style="font-size:12px;font-weight:700;color:#c8a06e;background:rgba(200,160,110,0.12);border-radius:20px;padding:3px 11px">DPG ${dpgMl}مل</span>` : ''}
+        <span style="font-size:12px;font-weight:700;color:var(--green);background:rgba(110,200,120,0.12);border-radius:20px;padding:3px 11px">المجموع ${bSize}مل</span>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderBlendResult(r) {
   if (r.mode === "suggest") {
     return `
@@ -730,6 +822,7 @@ function renderBlendResult(r) {
           </div>
           <div style="font-size:12px;color:var(--mu);margin-bottom:4px">مزيج ${FAM[r.p1.f]?FAM[r.p1.f].ar:""} + ${fam.ar||""} — نتيجة متوازنة ومميزة</div>
           <div class="result-name">✨ "${nm}"</div>
+          ${blendMixStepsHTML([{perf:perf,brand,pct:pct2,role:"داعم"},{perf:r.p1,brand:r.b1,pct:pct1,role:"رئيسي"}].sort((a,b)=>b.pct-a.pct), S.bSize, "suggest")}
         </div>`;
       }).join("")}
     </div>`;
@@ -758,6 +851,7 @@ function renderBlendResult(r) {
         <div style="font-size:12px;color:#7ddbc9">الموسم: ${r.seasonTag}</div>
         <div style="font-size:13px;font-weight:700;color:var(--gl);margin-top:9px">✨ "${r.suggestedName}"</div>
       </div>
+      ${blendMixStepsHTML(r.ratios, S.bSize, "eval")}
     </div>`;
   }
 }
