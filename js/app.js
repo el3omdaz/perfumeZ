@@ -260,7 +260,20 @@ function getFilteredBrands(catF, season, gender, famF) {
       items = items.filter(p => p.f === famF);
     }
     return { ...b, items };
-  }).filter(b => b.items.length > 0);
+  }).filter(b => b.items.length > 0)
+   .sort((a, b) => {
+      // غربي/نيش أولاً (🌍، ✨)، خليجي/يدوي ثانياً (🌙، ⭐)
+      const order = { "🌍": 0, "✨": 1, "🌙": 2, "⭐": 3 };
+      const catDiff = (order[a.cat] ?? 9) - (order[b.cat] ?? 9);
+      if (catDiff !== 0) return catDiff;
+      // داخل كل مجموعة: ترتيب أبجدي
+      if (a.cat === "🌙" || a.cat === "⭐") {
+        // أبجدي عربي
+        return (a.ar || a.b).localeCompare(b.ar || b.b, "ar");
+      }
+      // أبجدي لاتيني
+      return a.b.localeCompare(b.b, "fr");
+    });
 }
 
 // All perfumes flat list for search
