@@ -407,16 +407,6 @@ const BRANDS = [
     {n:"Musk 12 EDP",             f:"musky",   isoBranded:false, sandalPct:0.012, isosePct:0,     g:"u"},
     {n:"Eden Juicy Apple 01 EDP", f:"fresh",   isoBranded:false, sandalPct:0,     isosePct:0,     g:"f"},
   ]},
-  {b:"Cartier", ar:"كارتيير", cat:"🌍", items:[
-    {n:"Déclaration EDT",              f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
-    {n:"Déclaration EDP",             f:"oriental", isoBranded:true, sandalPct:0.025, g:"m"},
-    {n:"Pasha de Cartier EDT",        f:"aromatic", isoBranded:true, sandalPct:0.015, g:"m"},
-    {n:"Santos de Cartier EDT",       f:"aromatic", isoBranded:true, sandalPct:0.015, g:"m"},
-    {n:"La Panthère EDP",             f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
-    {n:"Baiser Volé EDP",             f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
-    {n:"Must de Cartier EDP",         f:"oriental", isoBranded:true, sandalPct:0.020, g:"f"},
-    {n:"Carat EDP",                   f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
-  ]},
 ];
 
 // ═══════════════════════════════════════════════════
@@ -708,17 +698,6 @@ const EXTRA_PERFUMES = {
     {n:"Lovefest Burning Cherry 42 EDP",f:"sweet",g:"f",isoBranded:false,sandalPct:0.015,isosePct:0},
     {n:"Oudgasm Oud Maracuja 30 EDP",f:"oud",g:"u",isoBranded:false,sandalPct:0.035,isosePct:0.012},
   ],
-  "Cartier":[
-    {n:"L'Envol de Cartier EDP",       f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
-    {n:"Roadster EDT",                  f:"aromatic", isoBranded:true, sandalPct:0.012, g:"m"},
-    {n:"Déclaration d'Un Soir EDT",    f:"fresh",    isoBranded:true, sandalPct:0.015, g:"m"},
-    {n:"Pasha de Cartier EDP",         f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
-    {n:"Les Heures Voyageuses Oud & Oud EDP", f:"oud", isoBranded:true, sandalPct:0.035, g:"u"},
-    {n:"Oud & Rose EDP",               f:"oud",      isoBranded:true, sandalPct:0.030, g:"u"},
-    {n:"La Panthère Légère EDP",       f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
-    {n:"So Pretty de Cartier EDP",     f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
-    {n:"Délices de Cartier EDP",       f:"fresh",    isoBranded:true, sandalPct:0.008, g:"f"},
-  ],
 };
 // دمج العطور الإضافية في الماركات (تجاهل المكرر بالاسم)
 function mergeExtraPerfumes(){
@@ -802,7 +781,6 @@ const PRICE_BRAND = {
   "Parfums de Marly":72, "MFK":95, "Amouage":130, "Xerjoff":130,
   "Lattafa":9, "Arabian Oud":26, "Al Haramain":14, "Rasasi":16, "Swiss Arabian":14, "Ajmal":18,
   "Abdul Samad Al Qurashi":35, "Kayali":40,
-  "Cartier":52,
 };
 const PRICE_CAT_FALLBACK = { "🌍":35, "✨":110, "🌙":14, "⭐":30 }; // حسب الفئة لو الماركة غير معروفة
 const PRICE_DEFAULT = 30;

@@ -1369,7 +1369,7 @@ function printRecipe() {
   const w = window.open("", "_blank");
   if (!w) { toast("فعّل النوافذ المنبثقة للطباعة"); return; }
   const safe = t.replace(/&/g,"&amp;").replace(/</g,"&lt;");
-  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>وصفة عطر</title><style>body{font-family:Tahoma,Arial,sans-serif;padding:30px;color:#1a1a1a;line-height:2;font-size:15px}h1{color:#a8852a;font-size:22px;border-bottom:2px solid #e8c070;padding-bottom:8px}pre{white-space:pre-wrap;font-family:inherit}.btn-bar{display:flex;gap:10px;margin-bottom:20px}.btn{padding:9px 22px;border:none;border-radius:8px;font-family:Tahoma,Arial,sans-serif;font-size:14px;cursor:pointer}.btn-print{background:#a8852a;color:#fff}.btn-close{background:#eee;color:#333}@media print{.btn-bar{display:none}}</style></head><body><div class="btn-bar"><button class="btn btn-print" onclick="window.print()">🖨 طباعة</button><button class="btn btn-close" onclick="window.close()">✕ إغلاق</button></div><h1>🧴 حاسبة العطور</h1><pre>${safe}</pre></body></html>`);
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>وصفة عطر</title><style>body{font-family:Tahoma,Arial,sans-serif;padding:30px;color:#1a1a1a;line-height:2;font-size:15px}h1{color:#a8852a;font-size:22px;border-bottom:2px solid #e8c070;padding-bottom:8px}pre{white-space:pre-wrap;font-family:inherit}</style></head><body><h1>🧴 حاسبة العطور</h1><pre>${safe}</pre></body></html>`);
   w.document.close(); w.focus(); setTimeout(() => { try { w.print(); } catch(e) {} }, 350);
 }
 
