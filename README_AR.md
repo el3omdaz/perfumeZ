@@ -1,17 +1,32 @@
-# PerfumeZ Web App Pro
-
-نسخة ويب مستقلة من تطبيق PerfumeZ بدون تبويب الطابعة أو ملفات Bluetooth.
-
-## الرفع على GitHub Pages
-
-1. ارفع محتويات هذا المجلد مباشرة إلى جذر المستودع.
-2. من Settings ثم Pages اختر Deploy from a branch.
-3. اختر فرع `main` والمجلد `/root` ثم Save.
-4. افتح الرابط بعد اكتمال النشر.
-
-## ملاحظات
-
-- التطبيق يعمل كتطبيق PWA ويمكن تثبيته على الشاشة الرئيسية.
-- البيانات والأسعار تُحفظ محلياً في المتصفح.
-- استخدم التصدير والاستيراد لنقل بيانات صفحة الأسعار بين الأجهزة.
-- عند رفع تحديث جديد قد تحتاج إلى إغلاق التطبيق وفتحه مجدداً لتحديث ملفات الـPWA.
+{
+  "name": "PerfumeZ — حاسبة وإدارة أسعار العطور",
+  "short_name": "PerfumeZ",
+  "description": "حاسبة العطور الاحترافية مع المزج والتكاليف والأرباح وإدارة أسعار زيوت العطور",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09070d",
+  "theme_color": "#e8c070",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "utilities",
+    "lifestyle"
+  ],
+  "id": "./?source=pwa"
+}
