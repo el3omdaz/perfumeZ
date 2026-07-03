@@ -1,37 +1,24 @@
 // ═══════════════════════════════════════════════════
-// printer.js — طابعة ليبل Bluetooth JK-58PL (ESC/POS)
+// printer.js — طابعة ليبل JK-58PL Bluetooth (ESC/POS)
 // ═══════════════════════════════════════════════════
 
-const PRINTER = {
+// ── Bluetooth state ──
+const BT = {
   device: null,
-  server: null,
-  service: null,
-  char: null,
+  char:   null,
   connected: false,
 
-  // ESC/POS service & characteristic UUIDs (standard thermal printers)
-  SERVICE_UUID:  0x18F0,
-  CHAR_UUID:     0x2AF1,
-
-  // ── Connect via Web Bluetooth ──
   async connect() {
     try {
       if (!navigator.bluetooth) {
-        printerToast("❌ المتصفح لا يدعم Bluetooth — استخدم Chrome أو Edge", "error");
+        _ptoast("❌ المتصفح لا يدعم Bluetooth — استخدم Chrome أو Edge");
         return false;
       }
-      printerToast("🔍 جاري البحث عن الطابعة...", "info");
+      _ptoast("🔍 ابحث عن الطابعة...");
 
       this.device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { name: "JK-58PL" },
-          { namePrefix: "JK" },
-          { namePrefix: "Printer" },
-          { namePrefix: "RPP" },
-          { namePrefix: "MTP" },
-        ],
+        acceptAllDevices: true,
         optionalServices: [
-          0x18F0,
           "000018f0-0000-1000-8000-00805f9b34fb",
           "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
           "49535343-fe7d-4ae5-8fa9-9fafd205e455",
@@ -39,468 +26,451 @@ const PRINTER = {
       });
 
       this.device.addEventListener("gattserverdisconnected", () => {
-        this.connected = false;
-        updatePrinterBtn();
-        printerToast("🔌 انقطع اتصال الطابعة", "warn");
+        this.connected = false; this.char = null;
+        _ptoast("🔌 انقطع اتصال الطابعة");
+        _updateBtBar();
       });
 
-      printerToast("🔗 جاري الاتصال...", "info");
-      this.server  = await this.device.gatt.connect();
+      _ptoast("🔗 جاري الاتصال...");
+      const server = await this.device.gatt.connect();
 
-      // Try multiple service UUIDs (different firmware versions)
-      const serviceUUIDs = [
+      // جرب كل service UUID شائعة لطابعات 58mm
+      const svcUUIDs = [
         "000018f0-0000-1000-8000-00805f9b34fb",
         "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
         "49535343-fe7d-4ae5-8fa9-9fafd205e455",
-        0x18F0,
       ];
-      let service = null;
-      for (const uuid of serviceUUIDs) {
-        try { service = await this.server.getPrimaryService(uuid); break; }
-        catch(e) {}
+      let svc = null;
+      for (const u of svcUUIDs) {
+        try { svc = await server.getPrimaryService(u); break; } catch(e) {}
       }
-      if (!service) throw new Error("ما لقينا خدمة الطباعة");
+      if (!svc) throw new Error("ما لقينا خدمة الطباعة في الجهاز");
 
-      // Try multiple characteristic UUIDs
-      const charUUIDs = [
+      const chrUUIDs = [
         "00002af1-0000-1000-8000-00805f9b34fb",
         "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
         "49535343-8841-43f4-a8d4-ecbe34729bb3",
         "49535343-aca3-481c-91ec-d85e28a60318",
-        0x2AF1,
       ];
-      let char = null;
-      for (const uuid of charUUIDs) {
-        try { char = await service.getCharacteristic(uuid); break; }
-        catch(e) {}
+      let chr = null;
+      for (const u of chrUUIDs) {
+        try { chr = await svc.getCharacteristic(u); break; } catch(e) {}
       }
-      if (!char) throw new Error("ما لقينا characteristic الطابعة");
+      if (!chr) throw new Error("ما لقينا characteristic الطباعة");
 
-      this.service = service;
-      this.char    = char;
+      this.char = chr;
       this.connected = true;
-      updatePrinterBtn();
-      printerToast("✅ متصل بالطابعة بنجاح!", "success");
+      _ptoast("✅ متصل بالطابعة!");
+      _updateBtBar();
       return true;
     } catch(e) {
-      console.error("Printer connect error:", e);
-      this.connected = false;
-      updatePrinterBtn();
-      if (e.name === "NotFoundError") {
-        printerToast("⚠️ ما تم اختيار طابعة", "warn");
-      } else {
-        printerToast("❌ فشل الاتصال: " + (e.message||e), "error");
-      }
+      this.connected = false; this.char = null;
+      if (e.name !== "NotFoundError") _ptoast("❌ " + (e.message || e));
+      _updateBtBar();
       return false;
     }
   },
 
   disconnect() {
-    if (this.device && this.device.gatt.connected) {
-      this.device.gatt.disconnect();
-    }
-    this.connected = false;
-    updatePrinterBtn();
-    printerToast("🔌 تم قطع الاتصال", "info");
+    if (this.device && this.device.gatt.connected) this.device.gatt.disconnect();
+    this.connected = false; this.char = null;
+    _updateBtBar();
+    _ptoast("🔌 تم قطع الاتصال");
   },
 
-  // ── Write raw bytes ──
-  async write(data) {
+  async send(bytes) {
     if (!this.char) throw new Error("الطابعة غير متصلة");
-    const CHUNK = 20; // BLE max packet
-    for (let i = 0; i < data.length; i += CHUNK) {
-      const chunk = data.slice(i, i + CHUNK);
-      await this.char.writeValue(chunk);
-      await new Promise(r => setTimeout(r, 30));
+    const CHUNK = 20;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      await this.char.writeValue(bytes.slice(i, i + CHUNK));
+      await new Promise(r => setTimeout(r, 25));
     }
   },
 
-  // ── Print a perfume label ──
-  async printLabel(data) {
+  async print(labelFields) {
     if (!this.connected) {
       const ok = await this.connect();
       if (!ok) return;
     }
     try {
-      printerToast("🖨 جاري الطباعة...", "info");
-      const bytes = buildLabel(data);
-      await this.write(bytes);
-      printerToast("✅ تمت الطباعة!", "success");
+      _ptoast("🖨 جاري الطباعة...");
+      await this.send(_buildESC(labelFields));
+      _ptoast("✅ تمت الطباعة!");
     } catch(e) {
-      console.error("Print error:", e);
-      this.connected = false;
-      updatePrinterBtn();
-      printerToast("❌ خطأ في الطباعة: " + (e.message||e), "error");
+      this.connected = false; _updateBtBar();
+      _ptoast("❌ خطأ: " + (e.message || e));
     }
   }
 };
 
 // ═══════════════════════════════════════════════════
-// ESC/POS Label Builder (58mm thermal — Arabic via UTF-8 / CP1256)
+// ESC/POS builder
 // ═══════════════════════════════════════════════════
+function _buildESC(f) {
+  const b = [];
+  const esc  = (...v) => b.push(...v);
+  const line = (txt, bold, sz) => {
+    // bold
+    esc(0x1B, 0x45, bold ? 1 : 0);
+    // size: sz=1 normal, sz=2 double
+    esc(0x1D, 0x21, sz === 2 ? 0x11 : 0x00);
+    // UTF-8 codepage hint
+    esc(0x1B, 0x74, 0xFF);
+    _utf8(b, txt);
+    b.push(0x0A);
+  };
+  const sep  = () => { esc(0x1B, 0x45, 0); esc(0x1D, 0x21, 0); _utf8(b, "────────────────────"); b.push(0x0A); };
+  const feed = () => b.push(0x0A);
 
-function buildLabel(d) {
-  const e = new ESCBuilder();
+  // init + center
+  esc(0x1B, 0x40);   // ESC @
+  esc(0x1B, 0x61, 1); // center
 
-  // Init
-  e.init();
-  e.align("center");
+  line("✦ عطورك ✦", true, 2);
+  sep();
 
-  // ── Header: brand logo text ──
-  e.bold(true);
-  e.size(2, 2);  // double width & height
-  e.text("✦ عطورك ✦");
-  e.feed(1);
+  // اسم العطر — الأبرز
+  if (f.perfName) line(f.perfName, true, 2);
+  if (f.brandName) line(f.brandName, false, 1);
 
-  e.size(1, 1);
-  e.bold(false);
-  e.text("━━━━━━━━━━━━━━━━━━━━");
-  e.feed(1);
+  sep();
 
-  // ── Perfume name ──
-  e.bold(true);
-  e.size(1, 2);
-  e.text(d.perfName || "");
-  e.feed(1);
+  // تفاصيل — محاذاة يمين
+  esc(0x1B, 0x61, 2);
+  if (f.size)      line("الحجم: " + f.size + " مل",   false, 1);
+  if (f.conc)      line("التركيز: " + f.conc,          false, 1);
+  if (f.family)    line("العائلة: " + f.family,        false, 1);
+  if (f.season)    line("الموسم: " + f.season,         false, 1);
+  if (f.note)      line(f.note,                         false, 1);
 
-  // ── Brand ──
-  e.bold(false);
-  e.size(1, 1);
-  e.text(d.brandName || "");
-  e.feed(1);
-
-  e.text("━━━━━━━━━━━━━━━━━━━━");
-  e.feed(1);
-
-  // ── Details row ──
-  e.align("right");
-  e.bold(false);
-  e.size(1, 1);
-
-  if (d.size)  e.text(`الحجم: ${d.size} مل`);
-  e.feed(1);
-  if (d.conc)  e.text(`التركيز: ${d.conc}`);
-  e.feed(1);
-  if (d.family) e.text(`العائلة: ${d.family}`);
-  e.feed(1);
-  if (d.season) e.text(`الموسم: ${d.season}`);
-  e.feed(1);
-
-  // ── Cost / Price ──
-  if (d.cost || d.sellPrice) {
-    e.align("center");
-    e.text("──────────────────");
-    e.feed(1);
-    e.align("right");
-    if (d.cost)      e.text(`التكلفة: ${d.cost} د.ك`);
-    e.feed(1);
-    if (d.sellPrice) { e.bold(true); e.text(`سعر البيع: ${d.sellPrice} د.ك`); e.bold(false); }
-    e.feed(1);
+  // تكلفة + بيع
+  if (f.cost || f.sellPrice) {
+    esc(0x1B, 0x61, 1); sep(); esc(0x1B, 0x61, 2);
+    if (f.cost)      line("التكلفة: " + f.cost + " د.ك",    false, 1);
+    if (f.sellPrice) line("سعر البيع: " + f.sellPrice + " د.ك", true, 1);
   }
 
-  // ── Ingredients ──
-  if (d.items && d.items.length) {
-    e.align("center");
-    e.text("──────────────────");
-    e.feed(1);
-    e.text("المقادير");
-    e.feed(1);
-    e.align("right");
-    d.items.forEach(item => {
-      e.text(`${item.label}: ${item.v} مل`);
-      e.feed(1);
-    });
+  // مقادير
+  if (f.items && f.items.length) {
+    esc(0x1B, 0x61, 1); sep(); line("المقادير", true, 1); esc(0x1B, 0x61, 2);
+    f.items.forEach(i => line(i.label + ": " + i.v + " مل", false, 1));
   }
 
-  // ── Footer ──
-  e.align("center");
-  e.text("━━━━━━━━━━━━━━━━━━━━");
-  e.feed(1);
-  e.bold(false);
-  e.size(1, 1);
-  const now = new Date();
-  const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
-  e.text(dateStr);
-  e.feed(1);
-  e.text("perfumez.app");
-  e.feed(4);  // eject
+  // تاريخ + فوتر
+  esc(0x1B, 0x61, 1); sep();
+  const d = new Date();
+  line(d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear(), false, 1);
 
-  // Cut
-  e.cut();
+  // eject + cut
+  feed(); feed(); feed(); feed();
+  esc(0x1D, 0x56, 0x42, 0x00); // full cut
 
-  return e.build();
+  return new Uint8Array(b);
 }
 
-// ═══════════════════════════════════════════════════
-// ESC/POS low-level builder
-// ═══════════════════════════════════════════════════
-class ESCBuilder {
-  constructor() { this.buf = []; }
-
-  push(...bytes) { this.buf.push(...bytes); return this; }
-
-  init()  { return this.push(0x1B, 0x40); }  // ESC @
-
-  align(a) {
-    const n = a === "left" ? 0 : a === "center" ? 1 : 2;
-    return this.push(0x1B, 0x61, n);
-  }
-
-  bold(on) { return this.push(0x1B, 0x45, on ? 1 : 0); }
-
-  size(w, h) {
-    // w: 1 or 2 (width multiplier), h: 1 or 2 (height multiplier)
-    const n = ((w - 1) << 4) | (h - 1);
-    return this.push(0x1D, 0x21, n);
-  }
-
-  // Print UTF-8 text (Arabic) — wraps text lines
-  text(str) {
-    if (!str) return this;
-    const encoded = encodeArabic(str);
-    this.push(...encoded);
-    return this;
-  }
-
-  feed(n = 1) { return this.push(0x0A); }  // LF × n simplified
-
-  cut() { return this.push(0x1D, 0x56, 0x42, 0x00); }  // GS V B 0 (full cut)
-
-  build() { return new Uint8Array(this.buf); }
-}
-
-// ── Arabic text encoding ──
-// ESC/POS doesn't natively support Arabic — we use UTF-8 bytes.
-// Most modern 58mm printers accept UTF-8 with the right codepage.
-function encodeArabic(str) {
-  // Set codepage to UTF-8 first: ESC t 255 (or try CP1256 page)
-  const header = [0x1B, 0x74, 0xFF];
-  const bytes  = [];
+function _utf8(buf, str) {
   for (let i = 0; i < str.length; i++) {
-    const code = str.charCodeAt(i);
-    if (code < 0x80) {
-      bytes.push(code);
-    } else if (code < 0x800) {
-      bytes.push(0xC0 | (code >> 6), 0x80 | (code & 0x3F));
-    } else {
-      bytes.push(0xE0 | (code >> 12), 0x80 | ((code >> 6) & 0x3F), 0x80 | (code & 0x3F));
-    }
+    const c = str.charCodeAt(i);
+    if      (c < 0x80)   buf.push(c);
+    else if (c < 0x800)  buf.push(0xC0|(c>>6), 0x80|(c&0x3F));
+    else                 buf.push(0xE0|(c>>12), 0x80|((c>>6)&0x3F), 0x80|(c&0x3F));
   }
-  bytes.push(0x0A); // newline after each text call
-  return [...header, ...bytes];
 }
 
 // ═══════════════════════════════════════════════════
-// UI Helpers
-// ═══════════════════════════════════════════════════
-function updatePrinterBtn() {
-  document.querySelectorAll(".printer-connect-btn").forEach(btn => {
-    if (PRINTER.connected) {
-      btn.innerHTML = "🖨 متصل ✓";
-      btn.style.borderColor = "rgba(110,200,120,0.6)";
-      btn.style.color = "#6ec878";
-    } else {
-      btn.innerHTML = "🖨 توصيل الطابعة";
-      btn.style.borderColor = "";
-      btn.style.color = "";
-    }
-  });
-}
-
-let printerToastTimer;
-function printerToast(msg, type = "info") {
-  // Reuse app toast if available
-  if (typeof toast === "function") { toast(msg); return; }
-  let t = document.getElementById("printer-toast");
-  if (!t) {
-    t = document.createElement("div");
-    t.id = "printer-toast";
-    t.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1008;border:1px solid rgba(232,192,112,0.4);color:#e8c070;padding:10px 18px;border-radius:20px;font-size:13px;z-index:9999;font-family:inherit;white-space:nowrap;transition:opacity .3s";
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = "1";
-  clearTimeout(printerToastTimer);
-  printerToastTimer = setTimeout(() => { t.style.opacity = "0"; }, 2200);
-}
-
-// ═══════════════════════════════════════════════════
-// Main entry — called from app.js result section
+// Modal — معاينة + تعديل + طباعة
 // ═══════════════════════════════════════════════════
 function openPrintLabelModal() {
-  // Collect current state from app
-  const result = typeof calcFormula === "function" ? calcFormula() : null;
-  const cost   = result && typeof calcCost === "function" ? calcCost(result) : null;
+  // اجمع البيانات من حالة التطبيق
+  const result = (typeof calcFormula === "function") ? calcFormula() : null;
+  const cost   = (result && typeof calcCost === "function") ? calcCost(result) : null;
 
-  // Build label data from current S state + formula result
-  const labelData = {
-    perfName:  (typeof S !== "undefined" && S.perf)  ? S.perf.n  : "",
+  // الحقول الافتراضية — كلها قابلة للتعديل
+  window._labelFields = {
+    perfName:  (typeof S !== "undefined" && S.perf)  ? S.perf.n   : "",
     brandName: (typeof S !== "undefined" && S.brand) ? S.brand.ar : "",
-    size:      (typeof S !== "undefined") ? S.size  : "",
+    size:      (typeof S !== "undefined") ? String(S.size || "") : "",
     conc:      (typeof S !== "undefined" && S.conc)  ? S.conc.ar  : "",
-    family:    result ? result.famAr   : "",
-    season:    result ? result.seasonAr : "",
-    cost:      cost   ? cost.total     : "",
+    family:    result ? (result.famAr || "")    : "",
+    season:    result ? (result.seasonAr || "") : "",
+    cost:      cost   ? cost.total  : "",
     sellPrice: (typeof S !== "undefined" && S.sellPrice) ? S.sellPrice : "",
-    items:     result ? result.items.map(({key,v}) => ({
+    note:      "",
+    items:     result ? result.items.map(({key, v}) => ({
       label: (typeof IMETA !== "undefined" && IMETA[key]) ? IMETA[key].label : key,
       v
     })) : [],
   };
 
-  showPrintModal(labelData);
+  window._printCopies = 1;
+  _renderLabelModal();
 }
 
-function showPrintModal(labelData) {
-  // Remove old
+function _renderLabelModal() {
   const old = document.getElementById("print-label-modal");
   if (old) old.remove();
 
+  const f = window._labelFields || {};
+
   const overlay = document.createElement("div");
   overlay.id = "print-label-modal";
-  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:flex-end;justify-content:center;z-index:9000;backdrop-filter:blur(4px)";
+  overlay.style.cssText = [
+    "position:fixed","inset:0","z-index:9500",
+    "background:rgba(0,0,0,0.82)","display:flex",
+    "align-items:flex-end","justify-content:center",
+    "backdrop-filter:blur(3px)"
+  ].join(";");
 
   overlay.innerHTML = `
-  <div style="background:#0f0a18;border:1px solid rgba(232,192,112,0.35);border-radius:18px 18px 0 0;padding:22px 18px 36px;width:100%;max-width:520px;animation:slideUp .25s ease">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:700;color:#e8c070">🖨 طباعة ليبل الزجاجة</div>
-      <button onclick="document.getElementById('print-label-modal').remove()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;padding:6px 13px;font-size:13px;cursor:pointer;font-family:inherit">✕</button>
+  <div style="
+    background:#0f0a18;
+    border:1px solid rgba(232,192,112,0.35);
+    border-radius:18px 18px 0 0;
+    padding:20px 16px 40px;
+    width:100%; max-width:520px;
+    max-height:92vh; overflow-y:auto;
+    animation:_slideUp .22s ease;
+    font-family:inherit; direction:rtl;
+  ">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:#e8c070">🏷 تعديل وطباعة الليبل</div>
+      <button onclick="document.getElementById('print-label-modal').remove()"
+        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+        color:#fff;border-radius:8px;padding:6px 13px;font-size:13px;cursor:pointer;font-family:inherit">✕</button>
     </div>
 
-    <!-- Label Preview -->
-    <div style="background:#fff;border-radius:10px;padding:16px 14px;margin-bottom:16px;text-align:center;color:#111;font-family:inherit;border:2px dashed rgba(232,192,112,0.4)">
-      <div style="font-size:10px;color:#888;margin-bottom:4px">معاينة الليبل (58مم)</div>
-      <div style="font-weight:800;font-size:17px;color:#1a0a00">✦ عطورك ✦</div>
-      <div style="font-size:11px;color:#555;margin:3px 0">━━━━━━━━━━━━━━</div>
-      <div style="font-weight:700;font-size:16px;color:#3a1a00">${labelData.perfName}</div>
-      <div style="font-size:11px;color:#666;margin-bottom:5px">${labelData.brandName}</div>
-      <div style="font-size:10px;color:#555">━━━━━━━━━━━━━━</div>
-      <div style="font-size:11px;color:#333;text-align:right;direction:rtl;line-height:1.9;margin-top:4px">
-        ${labelData.size ? `الحجم: ${labelData.size} مل<br>` : ""}
-        ${labelData.conc ? `التركيز: ${labelData.conc}<br>` : ""}
-        ${labelData.family ? `العائلة: ${labelData.family}<br>` : ""}
-        ${labelData.cost ? `التكلفة: ${labelData.cost} د.ك<br>` : ""}
-        ${labelData.sellPrice ? `<strong>البيع: ${labelData.sellPrice} د.ك</strong><br>` : ""}
-      </div>
-      <div style="font-size:9px;color:#aaa;margin-top:6px">${new Date().toLocaleDateString('ar-KW')}</div>
+    <!-- حقول قابلة للتعديل -->
+    <div style="background:rgba(232,192,112,0.05);border:1px solid rgba(232,192,112,0.2);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:13px;color:rgba(232,192,112,0.9);font-weight:700;margin-bottom:12px">✏️ تعديل بيانات الليبل</div>
+
+      ${_field("اسم العطر",  "lf-perfName",  f.perfName,  "text",   true)}
+      ${_field("الماركة",    "lf-brandName", f.brandName, "text")}
+      ${_field("الحجم (مل)", "lf-size",      f.size,      "text")}
+      ${_field("التركيز",    "lf-conc",      f.conc,      "text")}
+      ${_field("العائلة",    "lf-family",    f.family,    "text")}
+      ${_field("الموسم",     "lf-season",    f.season,    "text")}
+      ${_field("التكلفة (د.ك)", "lf-cost",   f.cost,      "text")}
+      ${_field("سعر البيع (د.ك)", "lf-sell", f.sellPrice, "text")}
+      ${_field("ملاحظة إضافية", "lf-note",  f.note || "", "text")}
     </div>
 
-    <!-- Bluetooth Status -->
-    <div id="bt-status-bar" style="background:rgba(255,255,255,0.05);border:1px solid rgba(232,192,112,0.2);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:12px;color:rgba(255,255,255,0.7)">
-        ${PRINTER.connected
-          ? `<span style="color:#6ec878">● متصل</span> — ${PRINTER.device ? PRINTER.device.name : "الطابعة"}`
+    <!-- معاينة الليبل -->
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px;text-align:center">معاينة الليبل (58مم)</div>
+    <div id="label-preview" style="
+      background:#fff; color:#111;
+      border-radius:10px; padding:14px 12px;
+      text-align:center; font-family:Tahoma,Arial,sans-serif;
+      margin-bottom:14px; border:2px dashed rgba(232,192,112,0.45);
+      max-width:220px; margin-left:auto; margin-right:auto;
+    "></div>
+
+    <!-- Bluetooth -->
+    <div id="bt-bar" style="
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(232,192,112,0.2);
+      border-radius:10px; padding:10px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:12px;
+    ">
+      <div id="bt-status-txt" style="font-size:12px;color:rgba(255,255,255,0.65)">
+        ${BT.connected
+          ? `<span style="color:#6ec878">● متصل</span> — ${BT.device ? BT.device.name : "الطابعة"}`
           : '<span style="color:#e87777">● غير متصل</span> — JK-58PL'}
       </div>
-      <button onclick="togglePrinterConnect()" class="printer-connect-btn ghost" style="font-size:12px;padding:6px 12px">
-        ${PRINTER.connected ? "🖨 متصل ✓" : "🖨 توصيل الطابعة"}
+      <button id="bt-toggle-btn" onclick="_toggleBt()"
+        style="background:rgba(255,255,255,0.07);border:1px solid rgba(232,192,112,0.3);
+        color:#e8c070;border-radius:8px;padding:6px 13px;font-size:12px;
+        cursor:pointer;font-family:inherit">
+        ${BT.connected ? "قطع الاتصال" : "🖨 توصيل"}
       </button>
     </div>
 
-    <!-- Bluetooth Note -->
     ${!navigator.bluetooth ? `
-    <div style="background:rgba(232,119,119,0.1);border:1px solid rgba(232,119,119,0.3);border-radius:9px;padding:10px;font-size:12px;color:#e8aaaa;margin-bottom:14px;line-height:1.6">
-      ⚠️ متصفحك لا يدعم Web Bluetooth — استخدم <strong>Chrome</strong> أو <strong>Edge</strong> على Android أو الكمبيوتر
+    <div style="background:rgba(232,119,119,0.1);border:1px solid rgba(232,119,119,0.3);
+      border-radius:9px;padding:10px;font-size:12px;color:#e8aaaa;margin-bottom:12px;line-height:1.6">
+      ⚠️ Web Bluetooth يحتاج <strong>Chrome</strong> أو <strong>Edge</strong> — Safari لا يدعمه
     </div>` : ""}
 
-    <!-- Copies -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="font-size:13px;color:rgba(255,255,255,0.7)">عدد النسخ:</div>
+    <!-- عدد النسخ -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="font-size:13px;color:rgba(255,255,255,0.7);white-space:nowrap">عدد النسخ:</div>
       <div style="display:flex;gap:6px">
         ${[1,2,3,5].map(n => `
-        <button onclick="setPrintCopies(${n})" id="copies-btn-${n}"
-          style="background:${n===1?"rgba(232,192,112,0.2)":"rgba(255,255,255,0.07)"};border:2px solid ${n===1?"rgba(232,192,112,0.6)":"rgba(255,255,255,0.15)"};color:${n===1?"#e8c070":"rgba(255,255,255,0.8)"};border-radius:8px;padding:7px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-          ${n}
-        </button>`).join("")}
+        <button onclick="_setCopies(${n})" id="cp-${n}"
+          style="background:${n===1?"rgba(232,192,112,0.2)":"rgba(255,255,255,0.07)"};
+          border:2px solid ${n===1?"rgba(232,192,112,0.6)":"rgba(255,255,255,0.15)"};
+          color:${n===1?"#e8c070":"rgba(255,255,255,0.8)"};
+          border-radius:8px;padding:7px 14px;font-size:14px;font-weight:700;
+          cursor:pointer;font-family:inherit">${n}</button>`).join("")}
       </div>
     </div>
 
-    <!-- Print Button -->
-    <button onclick="doPrintLabel()" style="width:100%;padding:15px;background:linear-gradient(135deg,#4a2a00,#c8902a);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.5px">
+    <!-- أزرار الطباعة -->
+    <button onclick="_doPrint()"
+      style="width:100%;padding:15px;background:linear-gradient(135deg,#3a1f00,#c8902a);
+      border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:800;
+      cursor:pointer;font-family:inherit;margin-bottom:10px">
       🖨 اطبع الليبل
     </button>
-
-    <!-- Fallback: Browser Print -->
-    <div style="text-align:center;margin-top:10px">
-      <button onclick="printViaScreen()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">
+    <div style="text-align:center">
+      <button onclick="_printBrowser()"
+        style="background:none;border:none;color:rgba(255,255,255,0.4);
+        font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">
         أو اطبع عبر المتصفح (بديل)
       </button>
     </div>
   </div>`;
 
   document.body.appendChild(overlay);
-  // Store label data for print
-  window._labelData = labelData;
-  window._printCopies = 1;
+
+  // ربط حقول التعديل بالمعاينة
+  ["perfName","brandName","size","conc","family","season","cost","sell","note"].forEach(k => {
+    const inp = document.getElementById("lf-" + k);
+    if (!inp) return;
+    inp.addEventListener("input", () => {
+      const fk = k === "sell" ? "sellPrice" : k;
+      window._labelFields[fk] = inp.value;
+      _refreshPreview();
+    });
+  });
+
+  _refreshPreview();
 }
 
-function setPrintCopies(n) {
+// حقل إدخال بتصميم التطبيق
+function _field(label, id, val, type, highlight) {
+  return `
+  <div style="margin-bottom:9px">
+    <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px">${label}</div>
+    <input id="${id}" type="${type || "text"}" value="${_esc(val)}"
+      style="width:100%;background:#0c0a15;
+      border:2px solid ${highlight ? "rgba(232,192,112,0.55)" : "rgba(232,192,112,0.2)"};
+      color:#fff;border-radius:9px;padding:9px 12px;
+      font-size:${highlight ? "15px" : "13px"};font-weight:${highlight ? "700" : "400"};
+      font-family:inherit;outline:none;transition:border .2s"
+      onfocus="this.style.borderColor='rgba(232,192,112,0.7)'"
+      onblur="this.style.borderColor='${highlight ? "rgba(232,192,112,0.55)" : "rgba(232,192,112,0.2)"}'">
+  </div>`;
+}
+
+function _esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;"); }
+
+// ── تحديث المعاينة ──
+function _refreshPreview() {
+  const f = window._labelFields || {};
+  const p = document.getElementById("label-preview");
+  if (!p) return;
+
+  const sep = `<div style="border-top:1px dashed #aaa;margin:6px 0"></div>`;
+  const row = (label, val, bold) => val
+    ? `<div style="font-size:10px;color:#333;text-align:right;direction:rtl;line-height:1.8;${bold?"font-weight:700":""}">
+        ${label ? label + ": " : ""}${_esc(val)}
+       </div>` : "";
+
+  p.innerHTML = `
+    <div style="font-weight:800;font-size:15px;color:#1a0800;margin-bottom:2px">✦ عطورك ✦</div>
+    ${sep}
+    <div style="font-weight:800;font-size:16px;color:#3a1200;margin:4px 0;line-height:1.3">${_esc(f.perfName||"—")}</div>
+    <div style="font-size:11px;color:#666;margin-bottom:4px">${_esc(f.brandName||"")}</div>
+    ${sep}
+    ${row("الحجم", f.size ? f.size+" مل" : "")}
+    ${row("التركيز", f.conc)}
+    ${row("العائلة", f.family)}
+    ${row("الموسم", f.season)}
+    ${(f.cost || f.sellPrice) ? sep : ""}
+    ${row("التكلفة", f.cost ? f.cost+" د.ك" : "")}
+    ${row("", f.sellPrice ? "البيع: "+f.sellPrice+" د.ك" : "", true)}
+    ${f.note ? `${sep}${row("", f.note)}` : ""}
+    ${sep}
+    <div style="font-size:9px;color:#999">${new Date().toLocaleDateString("ar-KW")}</div>
+  `;
+}
+
+// ── أزرار ──
+function _setCopies(n) {
   window._printCopies = n;
   [1,2,3,5].forEach(c => {
-    const btn = document.getElementById(`copies-btn-${c}`);
-    if (!btn) return;
-    const active = c === n;
-    btn.style.background = active ? "rgba(232,192,112,0.2)" : "rgba(255,255,255,0.07)";
-    btn.style.borderColor = active ? "rgba(232,192,112,0.6)" : "rgba(255,255,255,0.15)";
-    btn.style.color = active ? "#e8c070" : "rgba(255,255,255,0.8)";
+    const b = document.getElementById("cp-" + c);
+    if (!b) return;
+    const on = c === n;
+    b.style.background   = on ? "rgba(232,192,112,0.2)" : "rgba(255,255,255,0.07)";
+    b.style.borderColor  = on ? "rgba(232,192,112,0.6)" : "rgba(255,255,255,0.15)";
+    b.style.color        = on ? "#e8c070" : "rgba(255,255,255,0.8)";
   });
 }
 
-async function togglePrinterConnect() {
-  if (PRINTER.connected) {
-    PRINTER.disconnect();
-    // Refresh status bar in modal
-    const bar = document.getElementById("bt-status-bar");
-    if (bar) bar.querySelector("div").innerHTML = '<span style="color:#e87777">● غير متصل</span> — JK-58PL';
-  } else {
-    const ok = await PRINTER.connect();
-    const bar = document.getElementById("bt-status-bar");
-    if (bar && ok) bar.querySelector("div").innerHTML = `<span style="color:#6ec878">● متصل</span> — ${PRINTER.device ? PRINTER.device.name : "الطابعة"}`;
-  }
-  updatePrinterBtn();
+async function _toggleBt() {
+  if (BT.connected) { BT.disconnect(); }
+  else              { await BT.connect(); }
 }
 
-async function doPrintLabel() {
-  const data = window._labelData;
+function _updateBtBar() {
+  const txt = document.getElementById("bt-status-txt");
+  const btn = document.getElementById("bt-toggle-btn");
+  if (txt) txt.innerHTML = BT.connected
+    ? `<span style="color:#6ec878">● متصل</span> — ${BT.device ? BT.device.name : "الطابعة"}`
+    : '<span style="color:#e87777">● غير متصل</span> — JK-58PL';
+  if (btn) btn.textContent = BT.connected ? "قطع الاتصال" : "🖨 توصيل";
+}
+
+async function _doPrint() {
   const copies = window._printCopies || 1;
-  if (!data) return;
+  const fields = window._labelFields || {};
   for (let i = 0; i < copies; i++) {
-    await PRINTER.printLabel(data);
-    if (i < copies - 1) await new Promise(r => setTimeout(r, 800));
+    await BT.print(fields);
+    if (i < copies - 1) await new Promise(r => setTimeout(r, 700));
   }
 }
 
-function printViaScreen() {
-  const d = window._labelData || {};
-  const items = (d.items || []).map(i => `<div style="font-size:11px;color:#333">${i.label}: ${i.v} مل</div>`).join("");
-  const win = window.open("", "_blank", "width=300,height=500");
-  win.document.write(`
-  <!DOCTYPE html><html lang="ar" dir="rtl">
-  <head><meta charset="UTF-8"><title>ليبل عطر</title>
+function _printBrowser() {
+  const f = window._labelFields || {};
+  const items = (f.items || []).map(i =>
+    `<div style="font-size:10px;color:#333;text-align:right">${i.label}: ${i.v} مل</div>`
+  ).join("");
+
+  const win = window.open("", "_blank", "width=280,height=520");
+  if (!win) { _ptoast("⚠ السماح بالنوافذ المنبثقة أولاً"); return; }
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl">
+  <head><meta charset="UTF-8"><title>ليبل</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align:center; padding:16px; background:#fff; color:#111; width:200px; margin:0 auto; }
-    h1 { font-size:16px; margin:0 0 4px; }
-    .sep { border:none; border-top:1px dashed #999; margin:6px 0; }
-    .detail { font-size:11px; text-align:right; line-height:1.9; }
-    .footer { font-size:9px; color:#999; margin-top:8px; }
-    @media print { @page { margin:0; size: 58mm auto; } }
-  </style></head>
-  <body>
-    <div style="font-size:14px;font-weight:800">✦ عطورك ✦</div>
-    <hr class="sep">
-    <h1>${d.perfName||""}</h1>
-    <div style="font-size:11px;color:#555;margin-bottom:6px">${d.brandName||""}</div>
-    <hr class="sep">
-    <div class="detail">
-      ${d.size ? `الحجم: ${d.size} مل<br>` : ""}
-      ${d.conc ? `التركيز: ${d.conc}<br>` : ""}
-      ${d.family ? `العائلة: ${d.family}<br>` : ""}
-      ${d.cost ? `التكلفة: ${d.cost} د.ك<br>` : ""}
-      ${d.sellPrice ? `<strong>البيع: ${d.sellPrice} د.ك</strong><br>` : ""}
-    </div>
-    ${items ? `<hr class="sep">${items}` : ""}
-    <div class="footer">${new Date().toLocaleDateString('ar-KW')}<br>perfumez.app</div>
-    <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),800)}<\/script>
+    body{font-family:Tahoma,Arial,sans-serif;text-align:center;padding:12px;background:#fff;color:#111;width:195px;margin:auto}
+    .sep{border:none;border-top:1px dashed #aaa;margin:5px 0}
+    .detail{font-size:10px;text-align:right;line-height:1.9}
+    @media print{@page{margin:0;size:58mm auto}body{width:auto}}
+  </style></head><body>
+  <div style="font-weight:800;font-size:14px">✦ عطورك ✦</div>
+  <hr class="sep">
+  <div style="font-weight:800;font-size:15px;line-height:1.3;margin:4px 0">${f.perfName||""}</div>
+  <div style="font-size:10px;color:#666;margin-bottom:4px">${f.brandName||""}</div>
+  <hr class="sep">
+  <div class="detail">
+    ${f.size      ? "الحجم: "+f.size+" مل<br>" : ""}
+    ${f.conc      ? "التركيز: "+f.conc+"<br>" : ""}
+    ${f.family    ? "العائلة: "+f.family+"<br>" : ""}
+    ${f.season    ? "الموسم: "+f.season+"<br>" : ""}
+    ${f.cost      ? "التكلفة: "+f.cost+" د.ك<br>" : ""}
+    ${f.sellPrice ? "<strong>البيع: "+f.sellPrice+" د.ك</strong><br>" : ""}
+    ${f.note      ? f.note+"<br>" : ""}
+  </div>
+  ${items ? `<hr class="sep">${items}` : ""}
+  <hr class="sep">
+  <div style="font-size:9px;color:#999">${new Date().toLocaleDateString("ar-KW")}</div>
+  <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),600)}<\/script>
   </body></html>`);
   win.document.close();
 }
+
+function _ptoast(msg) {
+  if (typeof toast === "function") { toast(msg); return; }
+  console.log("[Printer]", msg);
+}
+
+// ── CSS animation لـ slide-up ──
+(function() {
+  if (document.getElementById("_printer-style")) return;
+  const s = document.createElement("style");
+  s.id = "_printer-style";
+  s.textContent = `@keyframes _slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}`;
+  document.head.appendChild(s);
+})();

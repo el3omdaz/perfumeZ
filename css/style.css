@@ -408,48 +408,63 @@ th { font-weight: 600; }
   #print-overlay-btns { display: none !important; }
 }
 
-/* ═══════════════════════════════════════════════════
-   HOME BUTTON — fixed, always visible
-   ═══════════════════════════════════════════════════ */
+/* ════════════════════════════════════
+   زر الهوم — ثابت في الشاشة دائماً
+   ════════════════════════════════════ */
 #home-btn {
+  /* ثابت بالنسبة للـ viewport — لا يتحرك مع الصفحة */
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 22px);
-  left: 18px;
-  z-index: 800;
-  width: 48px;
-  height: 48px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  left: 20px;
+  z-index: 8000;
+
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a0f00, #3a2200);
   border: 2px solid rgba(232,192,112,0.55);
+  background: linear-gradient(145deg, #1c1005, #2e1a05);
   color: #e8c070;
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
+  font-family: inherit;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.55), 0 0 0 1px rgba(232,192,112,0.1);
-  transition: opacity 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+  box-shadow:
+    0 4px 20px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(232,192,112,0.08);
+
+  /* الحالة الافتراضية: مخفي في step 1 */
   opacity: 0;
   pointer-events: none;
-  font-family: inherit;
+  transform: scale(0.8);
+  transition: opacity .22s ease, transform .22s ease;
+
+  /* منع التحديد والإزاحة */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
 }
+
+/* يظهر عند إضافة كلاس visible */
+#home-btn.home-btn-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
 #home-btn:active {
   transform: scale(0.88);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  background: linear-gradient(145deg, #2e1a05, #4a2a08);
 }
 
-/* ── Label print button ── */
-.label-print-btn {
-  background: rgba(110,200,181,0.08) !important;
-  border-color: rgba(110,200,181,0.35) !important;
+/* ── زر الليبل ── */
+.btn-label-print {
+  border-color: rgba(110,200,181,0.45) !important;
   color: #7ddbc9 !important;
 }
-.label-print-btn:active {
-  background: rgba(110,200,181,0.18) !important;
-}
-
-/* ── Print modal slide-up animation ── */
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+.btn-label-print:active {
+  background: rgba(110,200,181,0.12) !important;
 }

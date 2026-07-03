@@ -589,7 +589,7 @@ function outHTML(result, cost) {
     ${result.tip ? `<div class="tip-box">💡 ${result.tip}</div>` : ""}
     <div class="btn-row">
       <button class="ghost" onclick="copyRecipe()">📋 نسخ</button>
-      <button class="ghost label-print-btn" onclick="openPrintLabelModal()" title="طباعة ليبل الزجاجة على الطابعة الحرارية">🏷 ليبل</button>
+      <button class="ghost btn-label-print" onclick="openPrintLabelModal()">🏷 ليبل</button>
       <button class="ghost" onclick="printRecipe()">🖨 طباعة</button>
       <button class="ghost" onclick="resetCalc()">🔄 جديد</button>
     </div>
@@ -1007,32 +1007,34 @@ function showTab(t) {
   el("tab-blend").style.display = t === "blend" ? "block" : "none";
   el("tab-favs").style.display  = t === "favs"  ? "block" : "none";
   document.querySelectorAll(".tab").forEach((b,i) => b.classList.toggle("active", i === (t==="calc"?0:t==="blend"?1:2)));
-  if (t === "favs")  renderFavs();
+  if (t === "favs") renderFavs();
   else render();
-  updateHomeBtn();
+  _syncHomeBtn();
+}
+
+// ── زر الهوم ──
+function _syncHomeBtn() {
+  const btn = document.getElementById("home-btn");
+  if (!btn) return;
+  // يظهر في كل مكان عدا حاسبة step 1
+  const show = !(S.tab === "calc" && S.step === 1);
+  btn.classList.toggle("home-btn-visible", show);
 }
 
 function goHome() {
-  // Close any open modal
+  // أغلق أي مودال مفتوح
   const modal = el("modal");
   if (modal) { modal.style.display = "none"; modal.innerHTML = ""; }
-  const pmModal = document.getElementById("print-label-modal");
-  if (pmModal) pmModal.remove();
-  const printOverlay = document.getElementById("print-overlay");
-  if (printOverlay) printOverlay.remove();
-  // Reset to calc tab step 1
+  const pm = document.getElementById("print-label-modal");
+  if (pm) pm.remove();
+  const po = document.getElementById("print-overlay");
+  if (po) po.remove();
+  // إغلاق أي state للبحث
+  if (typeof aiSearchResults !== "undefined") { aiSearchResults = null; aiSearchQuery = ""; aiSelectedPerfs = new Set(); }
+  // ارجع للبداية
   resetCalc();
   showTab("calc");
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function updateHomeBtn() {
-  // Show home button only when not on calc step 1
-  const btn = el("home-btn");
-  if (!btn) return;
-  const onCalcStep1 = S.tab === "calc" && S.step === 1;
-  btn.style.opacity = onCalcStep1 ? "0" : "1";
-  btn.style.pointerEvents = onCalcStep1 ? "none" : "auto";
 }
 
 function setCat(v)    { S.catF = v; S.brand = null; S.perf = null; renderCalc(); }
@@ -1053,10 +1055,9 @@ function setPerf(v) {
 }
 
 function setStep(n) {
-  // Validate step 2 requires conc + grade defaults
   if (n === 2 && !S.conc)  S.conc  = CONCS[2];
   if (n === 2 && !S.grade) S.grade = GRADES[2];
-  S.step = n; renderCalc(); updateHomeBtn();
+  S.step = n; renderCalc(); _syncHomeBtn();
 }
 function setSize(s)  { S.size  = s; renderCalc(); }
 function setConc(id) { S.conc  = CONCS.find(c => c.id === id); renderCalc(); }
@@ -1438,4 +1439,4 @@ loadFavs();
 S.conc  = CONCS[2];
 S.grade = GRADES[2];
 render();
-setTimeout(updateHomeBtn, 100);
+setTimeout(_syncHomeBtn, 50);

@@ -48,11 +48,6 @@
     <button class="tab" onclick="showTab('favs')">⭐ مفضلة</button>
   </div>
 
-  <!-- Home Button — fixed, always visible -->
-  <button id="home-btn" onclick="goHome()" title="الصفحة الرئيسية" aria-label="الصفحة الرئيسية">
-    🏠
-  </button>
-
   <div id="tab-calc"></div>
   <div id="tab-blend" style="display:none"></div>
   <div id="tab-favs" style="display:none"></div>
@@ -60,6 +55,9 @@
 
 <div id="modal"></div>
 <div id="toast"></div>
+
+<!-- زر الهوم — ثابت دائماً -->
+<button id="home-btn" onclick="goHome()" aria-label="الرئيسية">🏠</button>
 
 <!-- Install Banner (iOS) -->
 <div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1a1008,#2a1a08);border-top:1px solid rgba(232,192,112,0.4);padding:14px 18px;padding-bottom:calc(14px + env(safe-area-inset-bottom));z-index:9999;font-family:inherit">
