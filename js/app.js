@@ -24,6 +24,7 @@ let S = {
   bBrand2: null, bPerf2: null,
   bBrand3: null, bPerf3: null,
   bSize: 50,
+  bConc: 0.18,
   dominant: "1",
   bResult: null,
   // search
@@ -587,9 +588,10 @@ function outHTML(result, cost) {
     </div>
     ${result.tip ? `<div class="tip-box">💡 ${result.tip}</div>` : ""}
     <div class="btn-row">
-      <button class="ghost" onclick="copyRecipe()">📋 نسخ الوصفة</button>
+      <button class="ghost" onclick="copyRecipe()">📋 نسخ</button>
+      <button class="ghost label-print-btn" onclick="openPrintLabelModal()" title="طباعة ليبل الزجاجة على الطابعة الحرارية">🏷 ليبل</button>
       <button class="ghost" onclick="printRecipe()">🖨 طباعة</button>
-      <button class="ghost" onclick="resetCalc()">🔄 عطر جديد</button>
+      <button class="ghost" onclick="resetCalc()">🔄 جديد</button>
     </div>
   </div>`;
 }
@@ -670,6 +672,12 @@ function renderBlend() {
       ${SIZES.map(s => `<button class="size-btn${S.bSize===s?" active":""}" onclick="S.bSize=${s};renderBlend()">${s}مل</button>`).join("")}
     </div>
   </div>
+  <div style="margin-bottom:12px">
+    <div class="field-label" style="margin-bottom:7px">تركيز الخلطة</div>
+    <div class="size-row">
+      ${[{id:0.03,ar:'كولونيا 3%'},{id:0.10,ar:'EDT 10%'},{id:0.18,ar:'EDP 18%'},{id:0.28,ar:'Parfum 28%'}].map(c => `<button class="size-btn${S.bConc===c.id?" active":""}" onclick="S.bConc=${c.id};renderBlend()">${c.ar}</button>`).join("")}
+    </div>
+  </div>
   ${bResult ? renderBlendResult(bResult) : ""}`;
 
   el("tab-blend").innerHTML = html;
@@ -704,18 +712,12 @@ function blendSelectHTML(fb, num, label, compatFam) {
 // ═══════════════════════════════════════════════════
 // BLEND MIX STEPS — خطوات الخلط الصحيحة
 // ═══════════════════════════════════════════════════
-function blendMixStepsHTML(ratios, bSize, mode) {
-  // حساب مقادير الكحول والإضافات
-  const totalOilPct  = ratios.reduce((s, r) => s + r.pct, 0); // 100
-  // الزيوت تشكل 18% من الزجاجة (EDP) من مجموع 100%
-  // نسبة الزيت الفعلية = مقدار الزيت من الزجاجة الكاملة
-  // هنا الـ pct هي توزيع الزيوت بين بعض (مجموعها 100)
-  // الزجاجة الكاملة = بSize مل
-  // كل زيت حجمه = (pct/100) * oilTotal مل
-  // oilTotal ≈ 20% من bSize (EDP معقول للخلطات)
-  const oilTotal    = parseFloat((bSize * 0.20).toFixed(1));
-  const dpgMl       = parseFloat((bSize * 0.05).toFixed(1));
-  const alcMl       = parseFloat(Math.max(0, bSize - oilTotal - dpgMl).toFixed(1));
+function blendMixStepsHTML(ratios, bSize, mode, concPct) {
+  // concPct = نسبة الزيت العطري الكلية (مثل 0.10 لـ EDT، 0.18 لـ EDP)
+  const oilPct      = concPct || S.bConc || 0.18;
+  const oilTotal    = parseFloat((bSize * oilPct).toFixed(1));
+  const dpgMl       = 0; // DPG اختياري — لا يُضاف تلقائياً في المزج
+  const alcMl       = parseFloat(Math.max(0, bSize - oilTotal).toFixed(1));
 
   const oils = ratios.map(r => ({
     name:  (r.brand ? r.brand.ar + ' · ' : '') + r.perf.n,
@@ -781,11 +783,11 @@ function blendMixStepsHTML(ratios, bSize, mode) {
 
     <!-- ملخص -->
     <div style="margin-top:12px;padding-top:11px;border-top:1px solid rgba(232,192,112,0.2)">
-      <div style="font-size:12px;color:var(--mu);margin-bottom:5px">ملخص الكميات الكاملة:</div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:5px">ملخص الكميات الكاملة (تركيز ${(oilPct*100).toFixed(0)}%):</div>
       <div style="display:flex;flex-wrap:wrap;gap:7px">
         <span style="font-size:12px;font-weight:700;color:var(--g);background:rgba(232,192,112,0.12);border-radius:20px;padding:3px 11px">زيوت ${oilTotal}مل</span>
         <span style="font-size:12px;font-weight:700;color:#6e8fc8;background:rgba(110,143,200,0.12);border-radius:20px;padding:3px 11px">كحول ${alcMl}مل</span>
-        ${dpgMl > 0 ? `<span style="font-size:12px;font-weight:700;color:#c8a06e;background:rgba(200,160,110,0.12);border-radius:20px;padding:3px 11px">DPG ${dpgMl}مل</span>` : ''}
+
         <span style="font-size:12px;font-weight:700;color:var(--green);background:rgba(110,200,120,0.12);border-radius:20px;padding:3px 11px">المجموع ${bSize}مل</span>
       </div>
     </div>
@@ -799,7 +801,7 @@ function renderBlendResult(r) {
       <div style="font-size:14px;color:var(--g);font-weight:700;margin-bottom:12px;text-align:center">
         توافقات مقترحة مع ${r.b1&&r.b1.ar} ${r.p1&&r.p1.n}
       </div>
-      ${r.picks.map(({brand, perf, cv}) => {
+      ${r.picks.map(({brand, perf, cv}, pickIdx) => {
         const fam = FAM[perf.f] || {};
         const ci  = CL[cv];
         const pct1 = 65, pct2 = 35;
@@ -835,9 +837,14 @@ function renderBlendResult(r) {
           </div>
           <div style="font-size:12px;color:var(--mu);margin-bottom:4px">مزيج ${FAM[r.p1.f]?FAM[r.p1.f].ar:""} + ${fam.ar||""} — نتيجة متوازنة ومميزة</div>
           <div class="result-name">✨ "${nm}"</div>
-          ${blendMixStepsHTML([{perf:perf,brand,pct:pct2,role:"داعم"},{perf:r.p1,brand:r.b1,pct:pct1,role:"رئيسي"}].sort((a,b)=>b.pct-a.pct), S.bSize, "suggest")}
         </div>`;
       }).join("")}
+      ${(() => {
+        if (!r.picks || r.picks.length === 0) return "";
+        const {brand, perf} = r.picks[0];
+        const pct1 = 65, pct2 = 35;
+        return blendMixStepsHTML([{perf:perf,brand,pct:pct2,role:"داعم"},{perf:r.p1,brand:r.b1,pct:pct1,role:"رئيسي"}].sort((a,b)=>b.pct-a.pct), S.bSize, "suggest");
+      })()}
     </div>`;
   } else {
     const colr = r.compatColor;
@@ -1002,6 +1009,30 @@ function showTab(t) {
   document.querySelectorAll(".tab").forEach((b,i) => b.classList.toggle("active", i === (t==="calc"?0:t==="blend"?1:2)));
   if (t === "favs")  renderFavs();
   else render();
+  updateHomeBtn();
+}
+
+function goHome() {
+  // Close any open modal
+  const modal = el("modal");
+  if (modal) { modal.style.display = "none"; modal.innerHTML = ""; }
+  const pmModal = document.getElementById("print-label-modal");
+  if (pmModal) pmModal.remove();
+  const printOverlay = document.getElementById("print-overlay");
+  if (printOverlay) printOverlay.remove();
+  // Reset to calc tab step 1
+  resetCalc();
+  showTab("calc");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function updateHomeBtn() {
+  // Show home button only when not on calc step 1
+  const btn = el("home-btn");
+  if (!btn) return;
+  const onCalcStep1 = S.tab === "calc" && S.step === 1;
+  btn.style.opacity = onCalcStep1 ? "0" : "1";
+  btn.style.pointerEvents = onCalcStep1 ? "none" : "auto";
 }
 
 function setCat(v)    { S.catF = v; S.brand = null; S.perf = null; renderCalc(); }
@@ -1025,7 +1056,7 @@ function setStep(n) {
   // Validate step 2 requires conc + grade defaults
   if (n === 2 && !S.conc)  S.conc  = CONCS[2];
   if (n === 2 && !S.grade) S.grade = GRADES[2];
-  S.step = n; renderCalc();
+  S.step = n; renderCalc(); updateHomeBtn();
 }
 function setSize(s)  { S.size  = s; renderCalc(); }
 function setConc(id) { S.conc  = CONCS.find(c => c.id === id); renderCalc(); }
@@ -1407,3 +1438,4 @@ loadFavs();
 S.conc  = CONCS[2];
 S.grade = GRADES[2];
 render();
+setTimeout(updateHomeBtn, 100);

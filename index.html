@@ -48,6 +48,11 @@
     <button class="tab" onclick="showTab('favs')">⭐ مفضلة</button>
   </div>
 
+  <!-- Home Button — fixed, always visible -->
+  <button id="home-btn" onclick="goHome()" title="الصفحة الرئيسية" aria-label="الصفحة الرئيسية">
+    🏠
+  </button>
+
   <div id="tab-calc"></div>
   <div id="tab-blend" style="display:none"></div>
   <div id="tab-favs" style="display:none"></div>
@@ -69,6 +74,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/printer.js"></script>
 <script>
 // ── Service Worker Registration ──
 if ('serviceWorker' in navigator) {

@@ -204,6 +204,43 @@ const PERF_DESC = {
   "Vanilla 28 EDP":      "فانيلا مضاعفة مع مسك سكري",
   "Musk 12 EDP":         "مسك نظيف على قاعدة أرضية ناعمة",
   "Eden Juicy Apple 01 EDP":"تفاح عصيري مع وردة وكيوي",
+  // Armani Si family
+  "Si Passione EDP":          "توت أحمر وورد داماسكي مع مسك — أنوثة متوهجة",
+  "Si Passione Intense EDP":  "توت أكثر عمقاً مع باتشولي وعنبر — سحر ليلي",
+  "Si Passione Eclat EDP":    "برغموت وتوت خفيف مع مسك فضي — انتعاش ناعم",
+  "Si Rose Signature EDP":    "ورد بولغاري وياسمين على قاعدة مسكية ناصعة",
+  "Si Intense EDP":           "فرنكنسنس وخشب السيدار مع Si الكلاسيك — قوة وعمق",
+  "Si Fiori EDP":             "وستيريا وعود خفيف على قاعدة مسكية — ربيع راقٍ",
+  // Ex Nihilo
+  "Fleur Narcotique EDP":          "خوخ وياسمين وورد مع مسك ناعم — إدمان جميل",
+  "Fleur Narcotique 10 Years EDP": "الإصدار الذهبي — حمضيات وورد محسّن مع قاعدة أعمق",
+  "Fleur Narcotique Extrait":      "تركيز الأيقونة — نفس التوقيع بكثافة ملكية مضاعفة",
+  "Lust in Paradise EDP":          "فاكهة استوائية وفانيلا مع مسك بلوري — جنة لا تُنسى",
+  "Cologne 352 EDP":               "برغموت وأوراق خضراء مع مسك نظيف — بساطة باريسية",
+  "French Affair EDP":             "وردة حمراء وبخور على قاعدة توباكو — رومانسية فرنسية",
+  "Mahina EDP":                    "مسك ناعم وفانيلا مع زهور بيضاء — هالة حسية",
+  "Amber Sky EDP":                 "عنبر وتوابل دافئة مع فانيلا — غروب شرقي",
+  "Sweet Morphine EDP":            "وردة حلوة مع فانيلا كريمية — إدمان شيرازي",
+  "Vetiver Moloko EDP":            "فيتيفر وحليب على قاعدة خشبية — تناقض ساحر",
+  "Outrecuidant EDP":              "ياسمين أبيض وفاوانيا مع مسك شفاف — جرأة ناعمة",
+  // CZAR Fragrances
+  "Impala EDP":          "حمضيات برية مع زنجبيل وباتشولي — الأكثر مبيعاً",
+  "Venom EDP":           "فلفل أسود وزعفران مع ورد وعود — جرأة مطلقة",
+  "Olga EDP":            "توابل حارة مع ورد وعنبر — عمق شرقي أسطوري",
+  "Alexandra EDP":       "ورد وفاوانيا على قاعدة مسك ناعمة",
+  "Sword EDP":           "بنفسج وخزامى مع جلد — قوة وأناقة",
+  "Honeymoon EDP":       "دافئ رومانسي مع مسك وخشب الصندل",
+  "Aqua Luna EDP":       "مائي منعش مع أعماق البحر وعنبر أبيض",
+  "Ocean Gravity EDP":   "بحري عميق مع توابل وأخشاب معاصرة",
+  "Antelope EDP":        "منعش خفيف مع زهور بيضاء وخشب",
+  "Gardenia EDP":        "غاردينيا فاخرة مع مسك أبيض وصندل",
+  "Alexis EDP":          "ورد وعود وعنبر وياسمين — رحلة ملكية",
+  "Nicholas EDP":        "عود وعنبر مع ورد — العطر الملكي الأيقوني",
+  "Tatiana EDP":         "ورد وبخور مع لدان — حضور الإمبراطورة",
+  "Falcon EDP":          "سيدار وبخور مع مسك قوي — حرية وسمو",
+  "Tiger EDP":           "توابل مدخنة مع عود وجلد — ضراوة رفيعة",
+  "Stallion EDP":        "خشبي مدخن مع توابل دافئة وعنبر",
+  "Butterfly EDP":       "زهور خفيفة مع مسك وفانيلا — رقة أنثوية",
 };
 
 const BRANDS = [
@@ -407,6 +444,11 @@ const BRANDS = [
     {n:"Musk 12 EDP",             f:"musky",   isoBranded:false, sandalPct:0.012, isosePct:0,     g:"u"},
     {n:"Eden Juicy Apple 01 EDP", f:"fresh",   isoBranded:false, sandalPct:0,     isosePct:0,     g:"f"},
   ]},
+  {b:"Ex Nihilo", ar:"اكس نيهيلو", cat:"✨", items:[
+    {n:"Fleur Narcotique EDP",              f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
+    {n:"Fleur Narcotique 10 Years EDP",     f:"floral",   isoBranded:true, sandalPct:0.018, g:"f"},
+    {n:"Fleur Narcotique Extrait",          f:"floral",   isoBranded:true, sandalPct:0.020, g:"f"},
+  ]},
   {b:"Cartier", ar:"كارتيير", cat:"🌍", items:[
     {n:"Déclaration EDT",              f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
     {n:"Déclaration EDP",             f:"oriental", isoBranded:true, sandalPct:0.025, g:"m"},
@@ -416,6 +458,25 @@ const BRANDS = [
     {n:"Baiser Volé EDP",             f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
     {n:"Must de Cartier EDP",         f:"oriental", isoBranded:true, sandalPct:0.020, g:"f"},
     {n:"Carat EDP",                   f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
+  ]},
+  {b:"CZAR", ar:"زار", cat:"✨", items:[
+    {n:"Impala EDP",      f:"fresh",    isoBranded:false, sandalPct:0.015, isosePct:0,     g:"u"},
+    {n:"Venom EDP",       f:"oriental", isoBranded:false, sandalPct:0.030, isosePct:0.015, g:"u"},
+    {n:"Olga EDP",        f:"oriental", isoBranded:false, sandalPct:0.025, isosePct:0.010, g:"u"},
+    {n:"Alexandra EDP",   f:"floral",   isoBranded:false, sandalPct:0.015, isosePct:0,     g:"f"},
+    {n:"Sword EDP",       f:"woody",    isoBranded:false, sandalPct:0.020, isosePct:0.012, g:"m"},
+    {n:"Honeymoon EDP",   f:"musky",    isoBranded:false, sandalPct:0.025, isosePct:0,     g:"u"},
+    {n:"Aqua Luna EDP",   f:"aqua",     isoBranded:false, sandalPct:0.010, isosePct:0,     g:"u"},
+    {n:"Ocean Gravity EDP",f:"aqua",   isoBranded:false, sandalPct:0.015, isosePct:0,     g:"u"},
+    {n:"Antelope EDP",    f:"fresh",    isoBranded:false, sandalPct:0.012, isosePct:0,     g:"u"},
+    {n:"Gardenia EDP",    f:"floral",   isoBranded:false, sandalPct:0.015, isosePct:0,     g:"f"},
+    {n:"Alexis EDP",      f:"oriental", isoBranded:false, sandalPct:0.030, isosePct:0.012, g:"u"},
+    {n:"Nicholas EDP",    f:"oud",      isoBranded:false, sandalPct:0.035, isosePct:0.015, g:"m"},
+    {n:"Tatiana EDP",     f:"floral",   isoBranded:false, sandalPct:0.018, isosePct:0,     g:"f"},
+    {n:"Falcon EDP",      f:"woody",    isoBranded:false, sandalPct:0.022, isosePct:0.010, g:"m"},
+    {n:"Tiger EDP",       f:"oud",      isoBranded:false, sandalPct:0.030, isosePct:0.015, g:"m"},
+    {n:"Stallion EDP",    f:"woody",    isoBranded:false, sandalPct:0.025, isosePct:0.012, g:"m"},
+    {n:"Butterfly EDP",   f:"floral",   isoBranded:false, sandalPct:0.010, isosePct:0,     g:"f"},
   ]},
 ];
 
@@ -497,6 +558,12 @@ const EXTRA_PERFUMES = {
     {n:"Stronger With You Intensely",f:"oriental",g:"m",isoBranded:true,sandalPct:0.022},
     {n:"Stronger With You Absolutely",f:"oriental",g:"m",isoBranded:true,sandalPct:0.025},
     {n:"Si EDP",f:"floral",g:"f",isoBranded:true,sandalPct:0},
+    {n:"Si Passione EDP",f:"floral",g:"f",isoBranded:true,sandalPct:0.010},
+    {n:"Si Passione Intense EDP",f:"oriental",g:"f",isoBranded:true,sandalPct:0.015},
+    {n:"Si Passione Eclat EDP",f:"floral",g:"f",isoBranded:true,sandalPct:0.008},
+    {n:"Si Rose Signature EDP",f:"floral",g:"f",isoBranded:true,sandalPct:0.010},
+    {n:"Si Intense EDP",f:"oriental",g:"f",isoBranded:true,sandalPct:0.012},
+    {n:"Si Fiori EDP",f:"floral",g:"f",isoBranded:true,sandalPct:0.008},
     {n:"My Way EDP",f:"floral",g:"f",isoBranded:true,sandalPct:0},
     {n:"Code Absolu",f:"oriental",g:"m",isoBranded:true,sandalPct:0.020},
   ],
@@ -719,6 +786,16 @@ const EXTRA_PERFUMES = {
     {n:"So Pretty de Cartier EDP",     f:"floral",   isoBranded:true, sandalPct:0.010, g:"f"},
     {n:"Délices de Cartier EDP",       f:"fresh",    isoBranded:true, sandalPct:0.008, g:"f"},
   ],
+  "Ex Nihilo":[
+    {n:"Lust in Paradise EDP",         f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
+    {n:"Cologne 352 EDP",              f:"fresh",    isoBranded:true, sandalPct:0.010, g:"u"},
+    {n:"French Affair EDP",            f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
+    {n:"Mahina EDP",                   f:"musky",    isoBranded:true, sandalPct:0.012, g:"u"},
+    {n:"Amber Sky EDP",                f:"oriental", isoBranded:true, sandalPct:0.020, g:"u"},
+    {n:"Sweet Morphine EDP",           f:"sweet",    isoBranded:true, sandalPct:0.018, g:"u"},
+    {n:"Vetiver Moloko EDP",           f:"woody",    isoBranded:true, sandalPct:0.020, g:"u"},
+    {n:"Outrecuidant EDP",             f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
+  ],
 };
 // دمج العطور الإضافية في الماركات (تجاهل المكرر بالاسم)
 function mergeExtraPerfumes(){
@@ -802,7 +879,7 @@ const PRICE_BRAND = {
   "Parfums de Marly":72, "MFK":95, "Amouage":130, "Xerjoff":130,
   "Lattafa":9, "Arabian Oud":26, "Al Haramain":14, "Rasasi":16, "Swiss Arabian":14, "Ajmal":18,
   "Abdul Samad Al Qurashi":35, "Kayali":40,
-  "Cartier":52,
+  "Cartier":52, "Ex Nihilo":110,
 };
 const PRICE_CAT_FALLBACK = { "🌍":35, "✨":110, "🌙":14, "⭐":30 }; // حسب الفئة لو الماركة غير معروفة
 const PRICE_DEFAULT = 30;
