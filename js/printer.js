@@ -286,11 +286,7 @@ function _renderLabelModal() {
       </button>
     </div>
 
-    ${!navigator.bluetooth ? `
-    <div style="background:rgba(232,119,119,0.1);border:1px solid rgba(232,119,119,0.3);
-      border-radius:9px;padding:10px;font-size:12px;color:#e8aaaa;margin-bottom:12px;line-height:1.6">
-      ⚠️ Web Bluetooth يحتاج <strong>Chrome</strong> أو <strong>Edge</strong> — Safari لا يدعمه
-    </div>` : ""}
+    <div id="bt-compat-warn"></div>
 
     <!-- عدد النسخ -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
@@ -323,6 +319,16 @@ function _renderLabelModal() {
   </div>`;
 
   document.body.appendChild(overlay);
+
+  // فحص دعم Bluetooth بعد التحميل — ديناميكي وليس static
+  const warnEl = document.getElementById("bt-compat-warn");
+  if (warnEl && !navigator.bluetooth) {
+    warnEl.innerHTML = `
+    <div style="background:rgba(232,119,119,0.1);border:1px solid rgba(232,119,119,0.3);
+      border-radius:9px;padding:10px;font-size:12px;color:#e8aaaa;margin-bottom:12px;line-height:1.6">
+      ⚠️ Web Bluetooth يحتاج <strong>Chrome</strong> أو <strong>Edge</strong> — Safari لا يدعمه
+    </div>`;
+  }
 
   // ربط حقول التعديل بالمعاينة
   ["perfName","brandName","size","conc","family","season","cost","sell","note"].forEach(k => {
