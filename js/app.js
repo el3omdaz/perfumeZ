@@ -301,8 +301,10 @@ function searchPerfs(query) {
 // RENDER — TAB CONTROLLER
 // ═══════════════════════════════════════════════════
 function render() {
-  if (S.tab === "calc")  renderCalc();
+  if (S.tab === "calc") renderCalc();
   else if (S.tab === "blend") renderBlend();
+  else if (S.tab === "favs") renderFavs();
+  else if (S.tab === "printer" && typeof renderPrinterTab === "function") renderPrinterTab();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1002,14 +1004,30 @@ function saveFavNote(id) {
 // EVENT HANDLERS
 // ═══════════════════════════════════════════════════
 function showTab(t) {
+  const validTabs = ["calc", "blend", "favs", "printer", "market"];
+  if (!validTabs.includes(t)) t = "calc";
   S.tab = t;
-  el("tab-calc").style.display  = t === "calc"  ? "block" : "none";
-  el("tab-blend").style.display = t === "blend" ? "block" : "none";
-  el("tab-favs").style.display  = t === "favs"  ? "block" : "none";
-  document.querySelectorAll(".tab").forEach((b,i) => b.classList.toggle("active", i === (t==="calc"?0:t==="blend"?1:2)));
+
+  validTabs.forEach(name => {
+    const panel = el("tab-" + name);
+    if (panel) panel.style.display = name === t ? "block" : "none";
+  });
+
+  document.querySelectorAll(".tab[data-tab]").forEach(button => {
+    const active = button.dataset.tab === t;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+
+  const container = document.querySelector(".container");
+  if (container) container.classList.toggle("wide-tab", t === "market");
+
   if (t === "favs") renderFavs();
-  else render();
+  else if (t === "printer" && typeof renderPrinterTab === "function") renderPrinterTab();
+  else if (t !== "market") render();
+
   _syncHomeBtn();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 // ── زر الهوم ──

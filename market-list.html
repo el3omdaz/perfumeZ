@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>قائمة عطور السوق الكويتي</title>
+  <style>
+    :root{--bg:#f4f6f8;--card:#ffffff;--dark:#1f2937;--muted:#6b7280;--border:#dfe3e8;--gold:#f5b301;--danger:#b91c1c;--success:#166534}
+    *{box-sizing:border-box}
+    body{margin:0;padding:18px;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:#111827}
+    .container{max-width:1500px;margin:auto}
+    h1{text-align:center;margin:0 0 16px;font-size:26px}
+    .toolbar,.add-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+    .toolbar{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+    button,.file-label{border:0;border-radius:9px;padding:10px 14px;font:inherit;cursor:pointer;background:var(--dark);color:#fff}
+    button:hover,.file-label:hover{opacity:.9}
+    .save-btn{background:var(--success)}.export-btn{background:#1d4ed8}.reset-btn{background:var(--danger)}
+    .file-label input{display:none}
+    .add-grid{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;align-items:end}
+    label{display:block;font-size:13px;color:#374151;margin-bottom:5px;font-weight:bold}
+    input,select,textarea{width:100%;border:1px solid #cfd5dc;border-radius:8px;padding:9px;font:inherit;background:#fff}
+    textarea{min-height:54px;resize:vertical}
+    .section{margin-top:18px}
+    .section-title{background:var(--dark);color:white;padding:11px 14px;border-radius:12px 12px 0 0;margin:0;font-size:20px}
+    .table-wrap{overflow-x:auto;background:white;border:1px solid var(--border);border-top:0;border-radius:0 0 12px 12px}
+    table{width:100%;min-width:1040px;border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--border);border-left:1px solid var(--border);padding:8px;text-align:center;vertical-align:middle}
+    th{position:sticky;top:0;z-index:2;background:#374151;color:#fff;font-size:13px}
+    tr:last-child td{border-bottom:0}
+    .brand-cell{min-width:120px;font-weight:bold}
+    .brand-badge{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;border-radius:50%;background:#111827;color:#fff;font-size:11px;padding:0 7px;margin-left:7px}
+    .star-group{display:flex;gap:4px;justify-content:center;white-space:nowrap}
+    .star-button{background:#e5e7eb;color:#6b7280;border:1px solid #cfd5dc;padding:6px 8px;min-width:38px}
+    .star-button.active{background:var(--gold);color:#111827;border-color:#d99a00;box-shadow:0 0 0 2px rgba(245,179,1,.18)}
+    .cancel-box{width:20px;height:20px;accent-color:#dc2626}
+    tr.canceled{opacity:.46;background:#f3f4f6}
+    tr.canceled .perfume-name{text-decoration:line-through}
+    .delete-button{background:#dc2626;padding:7px 10px}
+    .stage-tag{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:bold;white-space:nowrap}
+    .stage-one{background:#dcfce7;color:#166534;border:1px solid #86efac}
+    .stage-two{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+    .status{text-align:center;min-height:23px;margin-top:8px;color:var(--success);font-weight:bold}
+    .hint{margin:6px 0 0;color:var(--muted);font-size:12px;text-align:center}
+    @media(max-width:900px){.add-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:540px){body{padding:9px}.add-grid{grid-template-columns:1fr}h1{font-size:21px}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>قائمة زيوت العطور – السوق الكويتي</h1>
+
+  <div class="toolbar">
+    <button class="save-btn" onclick="saveAll()">💾 حفظ كامل</button>
+    <button class="export-btn" onclick="exportData()">⬇️ تصدير نسخة احتياطية</button>
+    <label class="file-label">⬆️ استيراد نسخة
+      <input id="importFile" type="file" accept=".json,application/json" onchange="importData(event)">
+    </label>
+    <button class="reset-btn" onclick="resetToDefault()">↩️ استعادة القائمة الأصلية</button>
+  </div>
+
+  <div class="add-card">
+    <div class="add-grid">
+      <div><label for="newGender">الجنس</label><select id="newGender"><option value="">اختر الجنس</option><option value="نسائي">👩 نسائي</option><option value="رجالي">👨 رجالي</option><option value="يونيسكس">🌐 يونيسكس</option></select></div>
+      <div><label for="newBrand">الماركة</label><input id="newBrand" placeholder="مثال: Dior"></div>
+      <div><label for="newName">اسم العطر</label><input id="newName" placeholder="مثال: Sauvage"></div>
+      <div><label for="newStage">المرحلة</label><select id="newStage"><option value="المرحلة الأولى">المرحلة الأولى</option><option value="المرحلة الثانية">المرحلة الثانية</option></select></div>
+      <div><label for="newPriority">درجة التركيز</label><select id="newPriority"><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div>
+    </div>
+    <div style="text-align:center;margin-top:10px"><button onclick="addPerfume()">➕ إضافة العطر</button></div>
+    <div class="hint">الحفظ المحلي يكون على الجهاز الحالي. استخدم التصدير والاستيراد لنقل البيانات بين الأجهزة.</div>
+  </div>
+
+  <div id="sections"></div>
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+const STORAGE_KEY = "kuwait_perfume_manager_v3";
+
+const defaultPerfumes = [
+  {id:"w01",gender:"نسائي",brand:"YSL",name:"Libre Intense",priority:3,stage:"المرحلة الأولى"},
+  {id:"w02",gender:"نسائي",brand:"Carolina Herrera",name:"Good Girl",priority:3,stage:"المرحلة الأولى"},
+  {id:"w03",gender:"نسائي",brand:"Lancôme",name:"La Vie Est Belle",priority:3,stage:"المرحلة الأولى"},
+  {id:"w04",gender:"نسائي",brand:"Giorgio Armani",name:"Si",priority:3,stage:"المرحلة الأولى"},
+  {id:"w05",gender:"نسائي",brand:"YSL",name:"Black Opium",priority:3,stage:"المرحلة الأولى"},
+  {id:"w06",gender:"نسائي",brand:"Prada",name:"Paradoxe",priority:3,stage:"المرحلة الأولى"},
+  {id:"w07",gender:"نسائي",brand:"Burberry",name:"Her",priority:2,stage:"المرحلة الأولى"},
+  {id:"w08",gender:"نسائي",brand:"Chanel",name:"Coco Mademoiselle",priority:3,stage:"المرحلة الأولى"},
+  {id:"w09",gender:"نسائي",brand:"Dior",name:"Miss Dior",priority:2,stage:"المرحلة الأولى"},
+  {id:"w10",gender:"نسائي",brand:"Giorgio Armani",name:"My Way",priority:2,stage:"المرحلة الأولى"},
+  {id:"w11",gender:"نسائي",brand:"Mugler",name:"Alien",priority:2,stage:"المرحلة الأولى"},
+  {id:"w12",gender:"نسائي",brand:"Kayali",name:"Vanilla 28",priority:3,stage:"المرحلة الأولى"},
+  {id:"w13",gender:"نسائي",brand:"Chanel",name:"Chance",priority:2,stage:"المرحلة الأولى"},
+  {id:"w14",gender:"نسائي",brand:"Versace",name:"Bright Crystal",priority:2,stage:"المرحلة الأولى"},
+  {id:"w15",gender:"نسائي",brand:"Narciso Rodriguez",name:"For Her",priority:2,stage:"المرحلة الأولى"},
+  {id:"w16",gender:"نسائي",brand:"Valentino",name:"Donna Born in Roma",priority:3,stage:"المرحلة الأولى"},
+  {id:"m01",gender:"رجالي",brand:"Dior",name:"Sauvage",priority:3,stage:"المرحلة الأولى"},
+  {id:"m02",gender:"رجالي",brand:"Chanel",name:"Bleu de Chanel",priority:3,stage:"المرحلة الأولى"},
+  {id:"m03",gender:"رجالي",brand:"YSL",name:"Y EDP",priority:3,stage:"المرحلة الأولى"},
+  {id:"m04",gender:"رجالي",brand:"Rabanne",name:"1 Million",priority:3,stage:"المرحلة الأولى"},
+  {id:"m05",gender:"رجالي",brand:"Giorgio Armani",name:"Stronger With You Intensely",priority:3,stage:"المرحلة الأولى"},
+  {id:"m06",gender:"رجالي",brand:"Jean Paul Gaultier",name:"Le Male Le Parfum",priority:3,stage:"المرحلة الأولى"},
+  {id:"m07",gender:"رجالي",brand:"Versace",name:"Dylan Blue",priority:2,stage:"المرحلة الأولى"},
+  {id:"m08",gender:"رجالي",brand:"Giorgio Armani",name:"Acqua di Gio Profondo",priority:2,stage:"المرحلة الأولى"},
+  {id:"m09",gender:"رجالي",brand:"Montblanc",name:"Explorer",priority:2,stage:"المرحلة الأولى"},
+  {id:"m10",gender:"رجالي",brand:"Prada",name:"Luna Rossa Carbon",priority:2,stage:"المرحلة الأولى"},
+  {id:"m11",gender:"رجالي",brand:"Versace",name:"Pour Homme",priority:2,stage:"المرحلة الأولى"},
+  {id:"m12",gender:"رجالي",brand:"Rabanne",name:"Invictus",priority:2,stage:"المرحلة الأولى"},
+  {id:"m13",gender:"رجالي",brand:"Rasasi",name:"Hawas",priority:3,stage:"المرحلة الأولى"},
+  {id:"m14",gender:"رجالي",brand:"Giorgio Armani",name:"Stronger With You Absolutely",priority:2,stage:"المرحلة الأولى"},
+  {id:"m15",gender:"رجالي",brand:"Giorgio Armani",name:"Armani Code Parfum",priority:2,stage:"المرحلة الأولى"},
+  {id:"m16",gender:"رجالي",brand:"Dior",name:"Dior Homme Intense",priority:3,stage:"المرحلة الأولى"},
+  {id:"u01",gender:"يونيسكس",brand:"Maison Francis Kurkdjian",name:"Baccarat Rouge 540",priority:3,stage:"المرحلة الأولى"},
+  {id:"u02",gender:"يونيسكس",brand:"Louis Vuitton",name:"Imagination",priority:3,stage:"المرحلة الأولى"},
+  {id:"u03",gender:"يونيسكس",brand:"Tom Ford",name:"Tobacco Vanille",priority:3,stage:"المرحلة الأولى"},
+  {id:"u04",gender:"يونيسكس",brand:"Tom Ford",name:"Oud Wood",priority:3,stage:"المرحلة الأولى"},
+  {id:"u05",gender:"يونيسكس",brand:"Mancera",name:"Instant Crush",priority:3,stage:"المرحلة الأولى"},
+  {id:"u06",gender:"يونيسكس",brand:"Xerjoff",name:"Erba Pura",priority:3,stage:"المرحلة الأولى"},
+  {id:"u07",gender:"يونيسكس",brand:"Maison Francis Kurkdjian",name:"Grand Soir",priority:2,stage:"المرحلة الأولى"},
+  {id:"u08",gender:"يونيسكس",brand:"Swiss Arabian",name:"Shaghaf Oud",priority:2,stage:"المرحلة الأولى"},
+  {id:"p201",gender:"نسائي",brand:"Givenchy",name:"L’Interdit",priority:2,stage:"المرحلة الثانية"},
+  {id:"p202",gender:"نسائي",brand:"Viktor & Rolf",name:"Flowerbomb",priority:2,stage:"المرحلة الثانية"},
+  {id:"p203",gender:"رجالي",brand:"Azzaro",name:"The Most Wanted",priority:3,stage:"المرحلة الثانية"},
+  {id:"p204",gender:"رجالي",brand:"Jean Paul Gaultier",name:"Ultra Male",priority:2,stage:"المرحلة الثانية"},
+  {id:"p205",gender:"يونيسكس",brand:"Sospiro",name:"Erba Pura Style",priority:2,stage:"المرحلة الثانية"},
+  {id:"p206",gender:"يونيسكس",brand:"Arabian Oud",name:"Kalemat",priority:2,stage:"المرحلة الثانية"},
+  {id:"p207",gender:"يونيسكس",brand:"Arabian Oud",name:"Madawi",priority:2,stage:"المرحلة الثانية"},
+  {id:"p208",gender:"يونيسكس",brand:"Gissah",name:"Imperial Valley",priority:3,stage:"المرحلة الثانية"}
+,
+  {id:"w17",gender:"نسائي",brand:"Jean Paul Gaultier",name:"Scandal",priority:3,stage:"المرحلة الأولى"},
+  {id:"w18",gender:"نسائي",brand:"Dior",name:"Poison Girl",priority:3,stage:"المرحلة الأولى"},
+  {id:"w19",gender:"نسائي",brand:"Giorgio Armani",name:"Si Passione",priority:3,stage:"المرحلة الأولى"},
+  {id:"w20",gender:"نسائي",brand:"Kayali",name:"Yum Pistachio",priority:3,stage:"المرحلة الأولى"},
+
+  {id:"m17",gender:"رجالي",brand:"Versace",name:"Eros",priority:3,stage:"المرحلة الأولى"},
+  {id:"m18",gender:"رجالي",brand:"YSL",name:"Y Le Parfum",priority:3,stage:"المرحلة الأولى"},
+  {id:"m19",gender:"رجالي",brand:"Rabanne",name:"Invictus Victory",priority:3,stage:"المرحلة الأولى"},
+  {id:"m20",gender:"رجالي",brand:"Dior",name:"Fahrenheit",priority:2,stage:"المرحلة الأولى"},
+  {id:"m21",gender:"رجالي",brand:"Jean Paul Gaultier",name:"Le Beau Le Parfum",priority:3,stage:"المرحلة الأولى"},
+
+  {id:"u09",gender:"يونيسكس",brand:"Maison Francis Kurkdjian",name:"Gentle Fluidity Silver",priority:3,stage:"المرحلة الأولى"},
+  {id:"u10",gender:"يونيسكس",brand:"Initio",name:"Oud for Greatness",priority:3,stage:"المرحلة الأولى"},
+  {id:"u11",gender:"يونيسكس",brand:"Byredo",name:"Bal d’Afrique",priority:2,stage:"المرحلة الأولى"},
+  {id:"u12",gender:"يونيسكس",brand:"Ex Nihilo",name:"Fleur Narcotique",priority:3,stage:"المرحلة الأولى"},
+  {id:"u13",gender:"يونيسكس",brand:"Xerjoff",name:"Naxos",priority:3,stage:"المرحلة الأولى"},
+
+];
+
+function cloneDefaults(){
+  return defaultPerfumes.map(item => ({...item,cost50:"",notes:"",canceled:false}));
+}
+
+let perfumes = loadData();
+
+function loadData(){
+  try{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed)) return parsed.map(p => {
+        const {cost100, ...rest} = p;
+        return {...rest, cost50:p.cost50 ?? "", notes:p.notes ?? "", canceled:Boolean(p.canceled)};
+      });
+    }
+  }catch(e){}
+  return cloneDefaults();
+}
+
+function saveToStorage(showMessage=false){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(perfumes));
+  if(showMessage) flash("تم حفظ جميع البيانات ✔");
+}
+
+function escapeHtml(value){
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function brandInitials(brand){
+  return brand.split(/\s+/).filter(Boolean).slice(0,3).map(x => x[0]).join("").toUpperCase();
+}
+
+function genderIcon(gender){
+  return gender === "نسائي" ? "👩" : gender === "رجالي" ? "👨" : "🌐";
+}
+
+function updateField(id, field, value){
+  const item = perfumes.find(p => p.id === id);
+  if(!item) return;
+  item[field] = value;
+  saveToStorage(false);
+}
+
+function setPriority(id, value){
+  const item = perfumes.find(p => p.id === id);
+  if(!item) return;
+  item.priority = Number(value);
+  saveToStorage(false);
+  render();
+}
+
+function toggleCancel(id, checked){
+  const item = perfumes.find(p => p.id === id);
+  if(!item) return;
+  item.canceled = checked;
+  saveToStorage(false);
+  render();
+}
+
+function deletePerfume(id){
+  const item = perfumes.find(p => p.id === id);
+  if(!item) return;
+  if(!confirm(`حذف العطر: ${item.name}؟`)) return;
+  perfumes = perfumes.filter(p => p.id !== id);
+  saveToStorage(false);
+  render();
+}
+
+function renderStarButtons(item){
+  return [1,2,3].map(value => `
+    <button type="button" class="star-button ${item.priority === value ? "active" : ""}" onclick="setPriority('${item.id}',${value})" title="${value} نجمة">
+      ${"⭐".repeat(value)}
+    </button>
+  `).join("");
+}
+
+function stageClass(stage){
+  return stage === "المرحلة الأولى" ? "stage-one" : "stage-two";
+}
+
+function rowHtml(item){
+  return `
+    <tr class="${item.canceled ? "canceled" : ""}">
+      <td><input class="cancel-box" type="checkbox" ${item.canceled ? "checked" : ""} onchange="toggleCancel('${item.id}',this.checked)"></td>
+      <td class="brand-cell"><span class="brand-badge">${escapeHtml(brandInitials(item.brand))}</span>${escapeHtml(item.brand)}</td>
+      <td class="perfume-name">${escapeHtml(item.name)}</td>
+      <td><input type="number" min="0" step="0.001" value="${escapeHtml(item.cost50)}" placeholder="د.ك" oninput="updateField('${item.id}','cost50',this.value)"></td>
+      <td><div class="star-group">${renderStarButtons(item)}</div></td>
+      <td><span class="stage-tag ${stageClass(item.stage)}">${escapeHtml(item.stage)}</span></td>
+      <td><textarea placeholder="اكتب ملاحظاتك" oninput="updateField('${item.id}','notes',this.value)">${escapeHtml(item.notes)}</textarea></td>
+      <td><button class="delete-button" onclick="deletePerfume('${item.id}')">حذف</button></td>
+    </tr>
+  `;
+}
+
+function buildTable(items){
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>إلغاء</th>
+            <th>الماركة</th>
+            <th>العطر</th>
+            <th>تكلفة 50 مل</th>
+            <th>التركيز</th>
+            <th>المرحلة</th>
+            <th>ملاحظات</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+        <tbody>${items.map(rowHtml).join("")}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function render(){
+  const groups = ["نسائي","رجالي","يونيسكس"];
+  const container = document.getElementById("sections");
+  container.innerHTML = groups.map(gender => {
+    const items = perfumes.filter(p => p.gender === gender).sort((a,b) => {
+      if(a.stage !== b.stage) return a.stage.localeCompare(b.stage,"ar");
+      if(a.brand !== b.brand) return a.brand.localeCompare(b.brand,"ar");
+      return a.name.localeCompare(b.name,"ar");
+    });
+    return `<section class="section"><h2 class="section-title">${genderIcon(gender)} ${gender} — ${items.length} عطر</h2>${buildTable(items)}</section>`;
+  }).join("");
+}
+
+function addPerfume(){
+  const gender = document.getElementById("newGender").value;
+  const brand = document.getElementById("newBrand").value.trim();
+  const name = document.getElementById("newName").value.trim();
+  const stage = document.getElementById("newStage").value;
+  const priority = Number(document.getElementById("newPriority").value);
+  if(!gender || !brand || !name){alert("اختر الجنس واكتب الماركة واسم العطر.");return}
+  perfumes.push({id:"custom_" + Date.now(),gender,brand,name,stage,priority,cost50:"",notes:"",canceled:false});
+  saveToStorage(false);
+  document.getElementById("newGender").value = "";
+  document.getElementById("newBrand").value = "";
+  document.getElementById("newName").value = "";
+  render();
+  flash("تمت إضافة العطر ✔");
+}
+
+function saveAll(){saveToStorage(true)}
+
+function exportData(){
+  saveToStorage(false);
+  const payload = {app:"Kuwait Perfume Manager",exportedAt:new Date().toISOString(),perfumes};
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "kuwait-perfumes-backup.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  flash("تم تصدير النسخة الاحتياطية ✔");
+}
+
+function importData(event){
+  const file = event.target.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      const imported = Array.isArray(parsed) ? parsed : parsed.perfumes;
+      if(!Array.isArray(imported)) throw new Error("صيغة غير صحيحة");
+      perfumes = imported.map((p,index) => ({
+        id:p.id || `imported_${Date.now()}_${index}`,
+        gender:p.gender || "يونيسكس",
+        brand:p.brand || "",
+        name:p.name || "",
+        stage:p.stage || "المرحلة الأولى",
+        priority:Number(p.priority) || 1,
+        cost50:p.cost50 ?? "",
+        notes:p.notes ?? "",
+        canceled:Boolean(p.canceled)
+      }));
+      saveToStorage(false);
+      render();
+      flash("تم استيراد البيانات بنجاح ✔");
+    }catch(error){
+      alert("تعذر استيراد الملف. تأكد أنه ملف النسخة الاحتياطية الصحيح.");
+    }finally{
+      event.target.value = "";
+    }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+function resetToDefault(){
+  if(!confirm("سيتم حذف التعديلات الحالية وإرجاع القائمة الأصلية. هل أنت متأكد؟")) return;
+  perfumes = cloneDefaults();
+  saveToStorage(false);
+  render();
+  flash("تمت استعادة القائمة الأصلية ✔");
+}
+
+function flash(message){
+  const el = document.getElementById("status");
+  el.textContent = message;
+  clearTimeout(window.__flashTimer);
+  window.__flashTimer = setTimeout(() => el.textContent = "", 2500);
+}
+
+render();
+</script>
+</body>
+</html>

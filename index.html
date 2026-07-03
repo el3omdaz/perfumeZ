@@ -42,15 +42,23 @@
     <div class="badge"><div class="badge-dot"></div>يعمل بالكامل بدون إنترنت</div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('calc')">🧪 حاسبة</button>
-    <button class="tab" onclick="showTab('blend')">🎨 مزج</button>
-    <button class="tab" onclick="showTab('favs')">⭐ مفضلة</button>
+  <div class="tabs" role="tablist" aria-label="أقسام التطبيق">
+    <button class="tab active" data-tab="calc" onclick="showTab('calc')">🧪 حاسبة</button>
+    <button class="tab" data-tab="blend" onclick="showTab('blend')">🎨 مزج</button>
+    <button class="tab" data-tab="favs" onclick="showTab('favs')">⭐ مفضلة</button>
+    <button class="tab" data-tab="printer" onclick="showTab('printer')">🖨 الطابعة</button>
+    <button class="tab" data-tab="market" onclick="showTab('market')">📋 قائمة العطور</button>
   </div>
 
   <div id="tab-calc"></div>
   <div id="tab-blend" style="display:none"></div>
   <div id="tab-favs" style="display:none"></div>
+  <div id="tab-printer" style="display:none"></div>
+  <div id="tab-market" style="display:none">
+    <div class="market-tab-shell">
+      <iframe id="market-list-frame" src="market-list.html" title="قائمة زيوت العطور في السوق الكويتي" loading="lazy"></iframe>
+    </div>
+  </div>
 </div>
 
 <div id="modal"></div>
@@ -77,7 +85,7 @@
 // ── Service Worker Registration ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('./service-worker.js')
       .then(reg => console.log('✅ SW registered:', reg.scope))
       .catch(err => console.log('❌ SW error:', err));
   });

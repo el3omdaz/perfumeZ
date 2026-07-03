@@ -55,11 +55,11 @@ h1 {
 }
 
 /* ── Tabs ── */
-.tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.tabs { display: flex; gap: 8px; justify-content: flex-start; margin-bottom: 20px; overflow-x: auto; padding: 2px 2px 7px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
 .tab {
   background: var(--cb); border: 2px solid var(--bd); color: var(--mu);
   border-radius: 50px; padding: 10px 22px; font-size: 15px; font-weight: 600;
-  cursor: pointer; transition: all .2s; font-family: inherit;
+  cursor: pointer; transition: all .2s; font-family: inherit; white-space: nowrap; flex: 0 0 auto;
 }
 .tab.active { background: var(--g); color: #09070d; border-color: var(--g); font-weight: 800; }
 
@@ -327,7 +327,7 @@ th { font-weight: 600; }
   background: var(--g); color: #09070d; padding: 10px 22px;
   border-radius: 30px; font-weight: 800; font-size: 14px;
   opacity: 0; pointer-events: none; transition: all .3s;
-  z-index: 200; box-shadow: 0 6px 24px rgba(232,192,112,.4);
+  z-index: 12000; box-shadow: 0 6px 24px rgba(232,192,112,.4);
 }
 #toast.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -467,4 +467,57 @@ th { font-weight: 600; }
 }
 .btn-label-print:active {
   background: rgba(110,200,181,0.12) !important;
+}
+
+
+/* ═══ تبويب الطابعة وقائمة العطور ═══ */
+.container.wide-tab { max-width: 1500px; }
+.market-tab-shell {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: calc(100vh - 190px);
+}
+#market-list-frame {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - 190px);
+  height: 900px;
+  border: 0;
+  background: #f4f6f8;
+}
+.printer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.printer-check {
+  display: flex; align-items: center; gap: 9px;
+  background: rgba(255,255,255,0.045); border: 1px solid var(--bd);
+  border-radius: 10px; padding: 10px; cursor: pointer; min-height: 44px;
+}
+.printer-check input { width: 19px; height: 19px; accent-color: var(--g); flex: 0 0 auto; }
+.printer-check span { font-size: 13px; color: rgba(255,255,255,.86); }
+.printer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.printer-main-btn {
+  border: 0; border-radius: 11px; padding: 13px 10px; font-family: inherit;
+  font-weight: 800; font-size: 14px; cursor: pointer;
+}
+.printer-main-btn.browser { background: linear-gradient(135deg,#3a1f00,#c8902a); color: #fff; }
+.printer-main-btn.bluetooth { background: rgba(110,200,181,.12); color: #7ddbc9; border: 1px solid rgba(110,200,181,.35); }
+.printer-main-btn:disabled { opacity: .38; cursor: not-allowed; }
+.printer-note { border-radius: 10px; padding: 11px 12px; font-size: 12px; line-height: 1.7; margin-bottom: 12px; }
+.label-preview-paper {
+  background: #fff; color: #111; border-radius: 10px; padding: 14px 12px;
+  text-align: center; font-family: Tahoma,Arial,sans-serif; margin: 0 auto 14px;
+  border: 2px dashed rgba(232,192,112,.45); max-width: 235px; min-height: 130px;
+}
+.copy-row { display: flex; gap: 7px; flex-wrap: wrap; }
+.copy-btn {
+  background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.8); border-radius: 8px; padding: 7px 14px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.copy-btn.active { background: rgba(232,192,112,.2); border-color: rgba(232,192,112,.6); color: var(--g); }
+@media (max-width: 560px) {
+  .printer-grid, .printer-actions { grid-template-columns: 1fr; }
+  #market-list-frame { height: calc(100vh - 155px); min-height: 680px; }
+  .container.wide-tab { padding-left: 4px; padding-right: 4px; }
 }
