@@ -1,0 +1,5 @@
+PerfumeZ Web App Pro v1.0
+- Web/PWA only
+- Printer tab and Bluetooth files removed
+- Professional perfume price-management redesign
+- Updated offline cache

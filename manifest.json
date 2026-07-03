@@ -1,7 +1,7 @@
 {
-  "name": "حاسبة العطور الاحترافية",
-  "short_name": "عطور",
-  "description": "حاسبة العطور الاحترافية — تركيبات، مزج، تكاليف، أرباح",
+  "name": "PerfumeZ — حاسبة وإدارة أسعار العطور",
+  "short_name": "PerfumeZ",
+  "description": "حاسبة العطور الاحترافية مع المزج والتكاليف والأرباح وإدارة أسعار زيوت العطور",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -27,5 +27,6 @@
   "categories": [
     "utilities",
     "lifestyle"
-  ]
+  ],
+  "id": "./?source=pwa"
 }

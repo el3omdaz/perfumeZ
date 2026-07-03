@@ -1,5 +1,5 @@
-// Service Worker — حاسبة العطور الاحترافية
-const CACHE_NAME = "atour-v1.2-printer-tabs";
+// Service Worker — PerfumeZ Web App Pro
+const CACHE_NAME = "perfumez-web-pro-v2.0";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,7 +7,6 @@ const ASSETS = [
   "./css/style.css",
   "./js/app.js",
   "./js/data.js",
-  "./js/printer.js",
   "./icon-192.png",
   "./icon-512.png",
   "./manifest.json"

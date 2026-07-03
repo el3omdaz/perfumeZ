@@ -74,19 +74,32 @@ function priceRange(p) {
 function priceCardHTML(brand, perf) {
   const pr = estimatePrices(brand, perf);
   if (!pr) return "";
+  const minPrice = Math.min(...pr.map(x => roundKD(x.price * 0.90)));
+  const maxPrice = Math.max(...pr.map(x => roundKD(x.price * 1.12)));
   return `
-  <div style="margin-top:11px;padding-top:11px;border-top:1px solid rgba(232,192,112,0.2)">
-    <div style="font-size:12px;color:rgba(232,192,112,0.9);font-weight:700;margin-bottom:8px">💵 السعر التقريبي بالكويت <span style="font-weight:400;color:rgba(255,255,255,0.5)">(العطر الأصلي)</span></div>
-    <div style="display:grid;grid-template-columns:repeat(${pr.length},1fr);gap:6px">
-      ${pr.map(x => `
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:8px 4px;text-align:center">
-        <div style="font-size:11px;color:rgba(255,255,255,0.6)">${x.size} مل</div>
-        <div style="font-size:13px;font-weight:800;color:#e8c070;margin-top:3px;line-height:1.2">${priceRange(x.price)}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,0.4)">د.ك</div>
+  <section class="retail-price-card" aria-label="السعر التقريبي للعطر الأصلي في الكويت">
+    <div class="retail-price-head">
+      <div>
+        <div class="retail-price-eyebrow">متوسط السوق الكويتي</div>
+        <div class="retail-price-title">السعر التقريبي للعطر الأصلي</div>
+      </div>
+      <div class="retail-price-range">
+        <strong>${nfKD(minPrice)}–${nfKD(maxPrice)}</strong>
+        <span>د.ك حسب الحجم</span>
+      </div>
+    </div>
+    <div class="retail-price-grid">
+      ${pr.map((x, index) => `
+      <div class="retail-price-item${index === 0 ? ' featured' : ''}">
+        <span class="retail-price-size">${x.size} مل</span>
+        <strong>${priceRange(x.price)}</strong>
+        <small>د.ك</small>
       </div>`).join("")}
     </div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:8px;line-height:1.6">* تقدير تقريبي لسعر الأصلي في السوق الكويتي — يختلف حسب المتجر والعرض والتركيز</div>
-  </div>`;
+    <div class="retail-price-note">
+      تقدير إرشادي يتغير حسب المتجر والعروض وتركيز النسخة. استخدمه للمقارنة وليس كسعر بيع ثابت.
+    </div>
+  </section>`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -304,7 +317,6 @@ function render() {
   if (S.tab === "calc") renderCalc();
   else if (S.tab === "blend") renderBlend();
   else if (S.tab === "favs") renderFavs();
-  else if (S.tab === "printer" && typeof renderPrinterTab === "function") renderPrinterTab();
 }
 
 // ═══════════════════════════════════════════════════
@@ -591,7 +603,6 @@ function outHTML(result, cost) {
     ${result.tip ? `<div class="tip-box">💡 ${result.tip}</div>` : ""}
     <div class="btn-row">
       <button class="ghost" onclick="copyRecipe()">📋 نسخ</button>
-      <button class="ghost btn-label-print" onclick="openPrintLabelModal()">🏷 ليبل</button>
       <button class="ghost" onclick="printRecipe()">🖨 طباعة</button>
       <button class="ghost" onclick="resetCalc()">🔄 جديد</button>
     </div>
@@ -1004,7 +1015,7 @@ function saveFavNote(id) {
 // EVENT HANDLERS
 // ═══════════════════════════════════════════════════
 function showTab(t) {
-  const validTabs = ["calc", "blend", "favs", "printer", "market"];
+  const validTabs = ["calc", "blend", "favs", "market"];
   if (!validTabs.includes(t)) t = "calc";
   S.tab = t;
 
@@ -1023,7 +1034,6 @@ function showTab(t) {
   if (container) container.classList.toggle("wide-tab", t === "market");
 
   if (t === "favs") renderFavs();
-  else if (t === "printer" && typeof renderPrinterTab === "function") renderPrinterTab();
   else if (t !== "market") render();
 
   _syncHomeBtn();
@@ -1043,8 +1053,6 @@ function goHome() {
   // أغلق أي مودال مفتوح
   const modal = el("modal");
   if (modal) { modal.style.display = "none"; modal.innerHTML = ""; }
-  const pm = document.getElementById("print-label-modal");
-  if (pm) pm.remove();
   const po = document.getElementById("print-overlay");
   if (po) po.remove();
   // إغلاق أي state للبحث

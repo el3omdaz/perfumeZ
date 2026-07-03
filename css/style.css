@@ -460,64 +460,119 @@ th { font-weight: 600; }
   background: linear-gradient(145deg, #2e1a05, #4a2a08);
 }
 
-/* ── زر الليبل ── */
-.btn-label-print {
-  border-color: rgba(110,200,181,0.45) !important;
-  color: #7ddbc9 !important;
-}
-.btn-label-print:active {
-  background: rgba(110,200,181,0.12) !important;
-}
-
-
-/* ═══ تبويب الطابعة وقائمة العطور ═══ */
+/* ═══ صفحة أسعار العطور ═══ */
 .container.wide-tab { max-width: 1500px; }
 .market-tab-shell {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.025);
   border: 1px solid var(--bd);
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   min-height: calc(100vh - 190px);
+  box-shadow: 0 14px 40px rgba(0,0,0,.18);
 }
 #market-list-frame {
   display: block;
   width: 100%;
   min-height: calc(100vh - 190px);
-  height: 900px;
+  height: 980px;
   border: 0;
-  background: #f4f6f8;
+  background: #09070d;
 }
-.printer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-.printer-check {
-  display: flex; align-items: center; gap: 9px;
-  background: rgba(255,255,255,0.045); border: 1px solid var(--bd);
-  border-radius: 10px; padding: 10px; cursor: pointer; min-height: 44px;
+
+/* ═══ بطاقة السعر التقريبي ═══ */
+.retail-price-card {
+  margin-top: 12px;
+  padding: 13px;
+  border-radius: 13px;
+  border: 1px solid rgba(232,192,112,.22);
+  background:
+    linear-gradient(135deg, rgba(232,192,112,.105), rgba(255,255,255,.035) 52%, rgba(110,181,200,.055));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
 }
-.printer-check input { width: 19px; height: 19px; accent-color: var(--g); flex: 0 0 auto; }
-.printer-check span { font-size: 13px; color: rgba(255,255,255,.86); }
-.printer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-.printer-main-btn {
-  border: 0; border-radius: 11px; padding: 13px 10px; font-family: inherit;
-  font-weight: 800; font-size: 14px; cursor: pointer;
+.retail-price-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 11px;
 }
-.printer-main-btn.browser { background: linear-gradient(135deg,#3a1f00,#c8902a); color: #fff; }
-.printer-main-btn.bluetooth { background: rgba(110,200,181,.12); color: #7ddbc9; border: 1px solid rgba(110,200,181,.35); }
-.printer-main-btn:disabled { opacity: .38; cursor: not-allowed; }
-.printer-note { border-radius: 10px; padding: 11px 12px; font-size: 12px; line-height: 1.7; margin-bottom: 12px; }
-.label-preview-paper {
-  background: #fff; color: #111; border-radius: 10px; padding: 14px 12px;
-  text-align: center; font-family: Tahoma,Arial,sans-serif; margin: 0 auto 14px;
-  border: 2px dashed rgba(232,192,112,.45); max-width: 235px; min-height: 130px;
+.retail-price-eyebrow {
+  font-size: 10px;
+  color: rgba(255,255,255,.48);
+  margin-bottom: 3px;
 }
-.copy-row { display: flex; gap: 7px; flex-wrap: wrap; }
-.copy-btn {
-  background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.15);
-  color: rgba(255,255,255,.8); border-radius: 8px; padding: 7px 14px;
-  font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+.retail-price-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gl);
 }
-.copy-btn.active { background: rgba(232,192,112,.2); border-color: rgba(232,192,112,.6); color: var(--g); }
+.retail-price-range {
+  text-align: left;
+  flex: 0 0 auto;
+}
+.retail-price-range strong {
+  display: block;
+  color: var(--g);
+  font-size: 14px;
+  line-height: 1.1;
+}
+.retail-price-range span {
+  display: block;
+  color: rgba(255,255,255,.42);
+  font-size: 9px;
+  margin-top: 4px;
+}
+.retail-price-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.retail-price-item {
+  min-width: 0;
+  text-align: center;
+  padding: 9px 5px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.085);
+  background: rgba(8,7,13,.34);
+}
+.retail-price-item.featured {
+  border-color: rgba(232,192,112,.34);
+  background: rgba(232,192,112,.07);
+}
+.retail-price-size {
+  display: block;
+  color: rgba(255,255,255,.54);
+  font-size: 10px;
+  margin-bottom: 4px;
+}
+.retail-price-item strong {
+  display: block;
+  color: var(--gl);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.retail-price-item small {
+  display: block;
+  color: rgba(255,255,255,.38);
+  font-size: 8px;
+  margin-top: 2px;
+}
+.retail-price-note {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  color: rgba(255,255,255,.43);
+  font-size: 9px;
+  line-height: 1.65;
+}
+
 @media (max-width: 560px) {
-  .printer-grid, .printer-actions { grid-template-columns: 1fr; }
-  #market-list-frame { height: calc(100vh - 155px); min-height: 680px; }
+  #market-list-frame { min-height: 720px; height: 1040px; }
   .container.wide-tab { padding-left: 4px; padding-right: 4px; }
+  .market-tab-shell { border-radius: 14px; }
+  .retail-price-head { align-items: center; }
+  .retail-price-range strong { font-size: 12px; }
+  .retail-price-item { padding: 8px 3px; }
+  .retail-price-item strong { font-size: 11px; }
 }
