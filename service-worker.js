@@ -1,6 +1,5 @@
 // Service Worker — PerfumeZ Web App Pro
-// GitHub Pages fixed build: cache version bumped to avoid old corrupted deployments.
-const CACHE_NAME = "perfumez-web-pro-github-pages-fixed-20260703";
+const CACHE_NAME = "perfumez-web-pro-v2.0";
 const ASSETS = [
   "./",
   "./index.html",
@@ -30,39 +29,31 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  const req = event.request;
-  if (req.method !== "GET") return;
+  if (event.request.method !== "GET") return;
 
-  const url = new URL(req.url);
-  if (url.pathname.endsWith("/reset-cache.html")) return;
-
-  // HTML/navigation: network first, then cached app shell.
-  if (req.mode === "navigate" || req.headers.get("accept")?.includes("text/html")) {
+  if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(req)
+      fetch(event.request)
         .then(response => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
-          }
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
           return response;
         })
-        .catch(() => caches.match(req).then(cached => cached || caches.match("./index.html")))
+        .catch(() => caches.match(event.request).then(cached => cached || caches.match("./index.html")))
     );
     return;
   }
 
-  // Static assets: cache first, refresh in background.
   event.respondWith(
-    caches.match(req).then(cached => {
-      const fetchPromise = fetch(req).then(response => {
-        if (response && response.ok) {
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        if (response && response.status === 200) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => cached);
-      return cached || fetchPromise;
+      });
     })
   );
 });
