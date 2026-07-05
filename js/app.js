@@ -377,6 +377,7 @@ function renderCalc() {
         </select>` : ""}
 
         ${perf ? `
+<div style="display:flex;gap:8px;align-items:center;justify-content:center;background:#222;border:1px solid #e8c070;border-radius:10px;padding:10px;margin:10px 0"><div id="copyName" style="flex:1;text-align:center;font-weight:700">${brand.ar} - ${perf.n}</div><button onclick="navigator.clipboard.writeText(document.getElementById(\'copyName\').innerText);toast&&toast(\'تم النسخ\')" class="season-btn active">نسخ</button></div>
         <div class="fi" style="margin-top:12px;background:rgba(232,192,112,0.08);border:1px solid rgba(232,192,112,0.25);border-radius:10px;padding:12px">
           <div style="font-size:11px;color:rgba(232,192,112,0.8);margin-bottom:3px">${brand.ar}</div>
           <div style="font-size:17px;font-weight:700;margin-bottom:7px">${perf.n}</div>
