@@ -1,5 +1,5 @@
 // Service Worker — PerfumeZ Web App Pro
-const CACHE_NAME = "perfumez-web-pro-v2.0";
+const CACHE_NAME = "perfumez-web-pro-v2.1";
 const ASSETS = [
   "./",
   "./index.html",
