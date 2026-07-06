@@ -244,7 +244,7 @@ const PERF_DESC = {
 };
 
 const BRANDS = [
-  {b:"Dior", ar:"ديور", cat:"🌍", items:[
+  {b:"Dior", ar:"Dior", cat:"🌍", items:[
     {n:"Sauvage EDT",        f:"fresh",    isoBranded:true, sandalPct:0.010, g:"m"},
     {n:"Sauvage EDP",        f:"woody",    isoBranded:true, sandalPct:0.015, g:"m"},
     {n:"Sauvage Parfum",     f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
@@ -253,7 +253,7 @@ const BRANDS = [
     {n:"J'adore EDP",        f:"floral",   isoBranded:true, sandalPct:0,     g:"f"},
     {n:"Fahrenheit EDT",     f:"woody",    isoBranded:true, sandalPct:0.015, g:"m"},
   ]},
-  {b:"Chanel", ar:"شانيل", cat:"🌍", items:[
+  {b:"Chanel", ar:"Chanel", cat:"🌍", items:[
     {n:"Bleu de Chanel EDT",       f:"aromatic", isoBranded:true, sandalPct:0.015, g:"m"},
     {n:"Bleu de Chanel EDP",       f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
     {n:"Platinum Egoiste EDT",     f:"aromatic", isoBranded:true, sandalPct:0,     g:"m"},
@@ -295,7 +295,7 @@ const BRANDS = [
     {n:"Viking EDP",                f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
     {n:"Himalaya EDP",              f:"aromatic", isoBranded:true, sandalPct:0.018, g:"m"},
   ]},
-  {b:"YSL", ar:"ايف سان لوران", cat:"🌍", items:[
+  {b:"YSL", ar:"Yves Saint Laurent", cat:"🌍", items:[
     {n:"La Nuit de l Homme EDT", f:"oriental", isoBranded:true, sandalPct:0.030, g:"m"},
     {n:"Y EDP",                  f:"woody",    isoBranded:true, sandalPct:0.018, g:"m"},
     {n:"Black Opium EDP",        f:"sweet",    isoBranded:true, sandalPct:0.015, g:"f"},
@@ -316,14 +316,14 @@ const BRANDS = [
     {n:"Dylan Blue EDT", f:"aqua",     isoBranded:true, sandalPct:0.012, g:"m"},
     {n:"Pour Homme EDT", f:"aqua",     isoBranded:true, sandalPct:0,     g:"m"},
   ]},
-  {b:"Paco Rabanne", ar:"باكو رابان", cat:"🌍", items:[
+  {b:"Paco Rabanne", ar:"Paco Rabanne", cat:"🌍", items:[
     {n:"1 Million EDT",      f:"fresh",    isoBranded:true, sandalPct:0.012, g:"m"},
     {n:"1 Million EDP",      f:"oriental", isoBranded:true, sandalPct:0.020, g:"m"},
     {n:"Invictus EDT",       f:"aqua",     isoBranded:true, sandalPct:0,     g:"m"},
     {n:"Phantom EDT",        f:"woody",    isoBranded:true, sandalPct:0.015, g:"m"},
     {n:"Lady Million EDP",   f:"floral",   isoBranded:true, sandalPct:0,     g:"f"},
   ]},
-  {b:"Givenchy", ar:"جيفنشي", cat:"🌍", items:[
+  {b:"Givenchy", ar:"Givenchy", cat:"🌍", items:[
     {n:"Gentleman EDT",       f:"woody",    isoBranded:true, sandalPct:0.035, g:"m"},
     {n:"Gentleman Boisee EDP",f:"woody",    isoBranded:true, sandalPct:0.030, g:"m"},
     {n:"L Interdit EDP",      f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
@@ -347,7 +347,7 @@ const BRANDS = [
     {n:"Cool Water EDT", f:"aqua",  isoBranded:true, sandalPct:0,     g:"m"},
     {n:"Zino EDT",       f:"woody", isoBranded:true, sandalPct:0.020, g:"m"},
   ]},
-  {b:"Jean Paul Gaultier", ar:"جان بول غوتييه", cat:"🌍", items:[
+  {b:"Jean Paul Gaultier", ar:"Jean Paul Gaultier", cat:"🌍", items:[
     {n:"Le Male EDT",             f:"aromatic", isoBranded:true, sandalPct:0.015, g:"m"},
     {n:"Ultra Male EDT",          f:"sweet",    isoBranded:true, sandalPct:0.015, g:"m"},
     {n:"Scandal Pour Homme EDT",  f:"woody",    isoBranded:true, sandalPct:0.018, g:"m"},
@@ -357,7 +357,7 @@ const BRANDS = [
     {n:"Aqva Pour Homme EDT",f:"aqua",     isoBranded:true, sandalPct:0,     g:"m"},
     {n:"Wood Neroli EDP",    f:"woody",    isoBranded:true, sandalPct:0.020, g:"u"},
   ]},
-  {b:"Hermes", ar:"ايرمس", cat:"🌍", items:[
+  {b:"Hermes", ar:"Hermes", cat:"🌍", items:[
     {n:"Terre d Hermes EDP", f:"woody", isoBranded:true, sandalPct:0.015, g:"m"},
     {n:"H24 EDP",            f:"woody", isoBranded:true, sandalPct:0.020, g:"m"},
   ]},
@@ -366,7 +366,7 @@ const BRANDS = [
     {n:"Bad Boy EDT",     f:"woody",    isoBranded:true, sandalPct:0.018, g:"m"},
     {n:"212 VIP Men EDP", f:"woody",    isoBranded:true, sandalPct:0.015, g:"m"},
   ]},
-  {b:"Parfums de Marly", ar:"بارفان دو مارلي", cat:"✨", items:[
+  {b:"Parfums de Marly", ar:"Parfums de Marly", cat:"✨", items:[
     {n:"Layton EDP",          f:"sweet",    isoBranded:true, sandalPct:0.025, g:"m"},
     {n:"Pegasus EDP",         f:"sweet",    isoBranded:true, sandalPct:0.018, g:"m"},
     {n:"Percival EDP",        f:"aromatic", isoBranded:true, sandalPct:0.018, g:"m"},
@@ -374,7 +374,7 @@ const BRANDS = [
     {n:"Delina EDP",          f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
     {n:"Delina Exclusif EDP", f:"floral",   isoBranded:true, sandalPct:0.018, g:"f"},
   ]},
-  {b:"MFK", ar:"ميزون فرنسيس", cat:"✨", items:[
+  {b:"MFK", ar:"Maison Francis Kurkdjian", cat:"✨", items:[
     {n:"Baccarat Rouge 540 EDP", f:"floral",   isoBranded:true, sandalPct:0.020, g:"u"},
     {n:"Grand Soir EDP",         f:"oriental", isoBranded:true, sandalPct:0.018, g:"u"},
     {n:"Oud Satin Mood EDP",     f:"oud",      isoBranded:true, sandalPct:0.030, g:"u"},
@@ -444,12 +444,12 @@ const BRANDS = [
     {n:"Musk 12 EDP",             f:"musky",   isoBranded:false, sandalPct:0.012, isosePct:0,     g:"u"},
     {n:"Eden Juicy Apple 01 EDP", f:"fresh",   isoBranded:false, sandalPct:0,     isosePct:0,     g:"f"},
   ]},
-  {b:"Ex Nihilo", ar:"اكس نيهيلو", cat:"✨", items:[
+  {b:"Ex Nihilo", ar:"Ex Nihilo", cat:"✨", items:[
     {n:"Fleur Narcotique EDP",              f:"floral",   isoBranded:true, sandalPct:0.015, g:"f"},
     {n:"Fleur Narcotique 10 Years EDP",     f:"floral",   isoBranded:true, sandalPct:0.018, g:"f"},
     {n:"Fleur Narcotique Extrait",          f:"floral",   isoBranded:true, sandalPct:0.020, g:"f"},
   ]},
-  {b:"Cartier", ar:"كارتيير", cat:"🌍", items:[
+  {b:"Cartier", ar:"Cartier", cat:"🌍", items:[
     {n:"Déclaration EDT",              f:"woody",    isoBranded:true, sandalPct:0.020, g:"m"},
     {n:"Déclaration EDP",             f:"oriental", isoBranded:true, sandalPct:0.025, g:"m"},
     {n:"Pasha de Cartier EDT",        f:"aromatic", isoBranded:true, sandalPct:0.015, g:"m"},

@@ -3,3 +3,5 @@ PerfumeZ Web App Pro v1.0
 - Printer tab and Bluetooth files removed
 - Professional perfume price-management redesign
 - Updated offline cache
+- Removed Arabic display names for French-house brands (Dior, Chanel, YSL, Givenchy, JPG, Hermes, Cartier, Paco Rabanne, Parfums de Marly, MFK, Ex Nihilo) — shown by their French/English name only
+- service-worker.js cache bumped to v2.1 to force update on deploy

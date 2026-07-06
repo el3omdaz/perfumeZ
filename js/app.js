@@ -360,7 +360,7 @@ function renderCalc() {
         <div class="field-label">الماركة</div>
         <select onchange="setBrand(this.value)" style="margin-bottom:12px">
           <option value="">— اختر الماركة —</option>
-          ${fb.map(b => `<option value="${b.b}" ${brand&&brand.b===b.b?"selected":""}>${b.ar} (${b.b}) ${b.cat}</option>`).join("")}
+          ${fb.map(b => `<option value="${b.b}" ${brand&&brand.b===b.b?"selected":""}>${b.ar===b.b?`${b.b} ${b.cat}`:`${b.ar} (${b.b}) ${b.cat}`}</option>`).join("")}
         </select>
 
         ${brand ? `
@@ -705,7 +705,7 @@ function blendSelectHTML(fb, num, label, compatFam) {
     <div class="field-label">${label}</div>
     <select onchange="setBBlend(${num},'brand',this.value)" style="margin-bottom:8px">
       <option value="">— الماركة —</option>
-      ${fb.map(b => `<option value="${b.b}" ${brand&&brand.b===b.b?"selected":""}>${b.ar} (${b.b}) ${b.cat}</option>`).join("")}
+      ${fb.map(b => `<option value="${b.b}" ${brand&&brand.b===b.b?"selected":""}>${b.ar===b.b?`${b.b} ${b.cat}`:`${b.ar} (${b.b}) ${b.cat}`}</option>`).join("")}
     </select>
     ${brand ? `<select onchange="setBBlend(${num},'perf',this.value)">
       <option value="">— العطر —</option>
@@ -931,7 +931,7 @@ function renderFavs() {
     <div class="field-label">الماركة</div>
     <select onchange="favSetBrand(this.value)" style="margin-bottom:11px">
       <option value="">— اختر الماركة —</option>
-      ${allBrands.map(b=>`<option value="${b.b}" ${favAddBrand===b.b?"selected":""}>${b.ar} (${b.b}) ${b.cat}</option>`).join("")}
+      ${allBrands.map(b=>`<option value="${b.b}" ${favAddBrand===b.b?"selected":""}>${b.ar===b.b?`${b.b} ${b.cat}`:`${b.ar} (${b.b}) ${b.cat}`}</option>`).join("")}
     </select>
     ${selBrand ? `
     <div class="field-label">العطر</div>
